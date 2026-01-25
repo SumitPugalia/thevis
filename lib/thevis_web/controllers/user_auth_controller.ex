@@ -27,8 +27,11 @@ defmodule ThevisWeb.UserAuthController do
       {:ok, user} ->
         redirect_to = get_redirect_path(user)
 
+        # Update logged_at timestamp before signing in
+        {:ok, updated_user} = Accounts.update_logged_at(user)
+
         conn
-        |> Guardian.Plug.sign_in(user)
+        |> Guardian.Plug.sign_in(updated_user)
         |> put_flash(:info, info)
         |> redirect(to: redirect_to)
 

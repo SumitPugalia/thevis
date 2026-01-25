@@ -15,6 +15,7 @@ defmodule Thevis.Accounts.User do
     field :hashed_password, :string
     field :password, :string, virtual: true, redact: true
     field :role, Ecto.Enum, values: [:consultant, :client]
+    field :logged_at, :utc_datetime_usec
 
     has_many :roles, Thevis.Accounts.Role
 

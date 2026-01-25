@@ -86,9 +86,9 @@ defmodule ThevisWeb.Layouts do
                   <.link
                     href={~p"/logout"}
                     method="delete"
-                    class="text-sm text-gray-600 hover:text-gray-900"
+                    class="text-sm text-gray-600 hover:text-gray-900 font-medium"
                   >
-                    Sign out
+                    Logout
                   </.link>
                 <% else %>
                   <.link

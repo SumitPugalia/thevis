@@ -139,9 +139,19 @@ defmodule Thevis.Accounts do
         {:error, :invalid_credentials}
 
       true ->
-        Bcrypt.no_user_verify()
         {:error, :invalid_credentials}
     end
+  end
+
+  @doc """
+  Updates the logged_at timestamp for a user.
+  """
+  def update_logged_at(user) do
+    now = DateTime.utc_now()
+
+    user
+    |> Ecto.Changeset.change(logged_at: now)
+    |> Repo.update()
   end
 
   @doc """
