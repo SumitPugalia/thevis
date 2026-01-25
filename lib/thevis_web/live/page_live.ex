@@ -5,9 +5,15 @@ defmodule ThevisWeb.PageLive do
 
   use ThevisWeb, :live_view
 
+  on_mount {ThevisWeb.Live.Hooks.AssignCurrentUser, :assign_current_user}
+
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :page_title, "thevis.ai - Making brands visible to AI")}
+    current_user = socket.assigns[:current_user]
+
+    {:ok,
+     assign(socket, :page_title, "thevis.ai - Making brands visible to AI")
+     |> assign(:current_user, current_user)}
   end
 
   @impl true
@@ -18,52 +24,10 @@ defmodule ThevisWeb.PageLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <!-- Navigation -->
-        <nav class="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-              <div class="flex items-center gap-2">
-                <span class="text-2xl font-bold text-gray-900">thevis</span>
-                <span class="text-sm text-gray-500">.ai</span>
-              </div>
-              <div class="flex items-center gap-4">
-                <%= if assigns[:current_user] do %>
-                  <.link
-                    navigate={~p"/dashboard"}
-                    class="text-sm text-gray-600 hover:text-gray-900"
-                  >
-                    Dashboard
-                  </.link>
-                  <.link
-                    href={~p"/logout"}
-                    method="delete"
-                    class="text-sm text-gray-600 hover:text-gray-900"
-                  >
-                    Sign out
-                  </.link>
-                <% else %>
-                  <.link
-                    navigate={~p"/login"}
-                    class="text-sm text-gray-600 hover:text-gray-900"
-                  >
-                    Sign in
-                  </.link>
-                  <.link
-                    navigate={~p"/register"}
-                    class="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Sign up
-                  </.link>
-                <% end %>
-              </div>
-            </div>
-          </div>
-        </nav>
-        
-    <!-- Hero Section -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <!-- Hero Section -->
+        <div class="w-full px-4 sm:px-6 lg:px-8 py-20">
           <div class="text-center">
             <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
               Making brands
@@ -76,7 +40,7 @@ defmodule ThevisWeb.PageLive do
               Optimize your AI visibility with automated GEO (Generative Engine Optimization).
             </p>
             <div class="flex gap-4 justify-center">
-              <%= if assigns[:current_user] do %>
+              <%= if @current_user do %>
                 <.link
                   navigate={~p"/dashboard"}
                   class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-lg"
@@ -102,7 +66,7 @@ defmodule ThevisWeb.PageLive do
         </div>
         
     <!-- Features Section -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="w-full px-4 sm:px-6 lg:px-8 py-20">
           <div class="text-center mb-16">
             <h2 class="text-3xl font-bold text-gray-900 mb-4">How thevis.ai Works</h2>
             <p class="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -148,7 +112,7 @@ defmodule ThevisWeb.PageLive do
         
     <!-- Use Cases Section -->
         <div class="bg-white py-20">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="w-full px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
               <h2 class="text-3xl font-bold text-gray-900 mb-4">Perfect For</h2>
               <p class="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -227,13 +191,13 @@ defmodule ThevisWeb.PageLive do
         </div>
         
     <!-- CTA Section -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="w-full px-4 sm:px-6 lg:px-8 py-20">
           <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-center">
             <h2 class="text-3xl font-bold text-white mb-4">Ready to improve your AI visibility?</h2>
             <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
               Join companies optimizing their presence in AI systems. Get started with a free audit.
             </p>
-            <%= if assigns[:current_user] do %>
+            <%= if @current_user do %>
               <.link
                 navigate={~p"/dashboard"}
                 class="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-gray-100 transition-colors text-lg"
@@ -252,14 +216,14 @@ defmodule ThevisWeb.PageLive do
         </div>
         
     <!-- Footer -->
-        <footer class="bg-gray-900 text-gray-400 py-12">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <footer class="bg-blue-50 border-t border-blue-100 py-12">
+          <div class="w-full px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span class="text-xl font-bold text-white">thevis</span>
-                <span class="text-sm">.ai</span>
+                <span class="text-xl font-bold text-gray-900">thevis</span>
+                <span class="text-sm text-gray-500">.ai</span>
               </div>
-              <p class="text-sm">© 2024 thevis.ai. All rights reserved.</p>
+              <p class="text-sm text-gray-600">© 2025 thevis.ai. All rights reserved.</p>
             </div>
           </div>
         </footer>

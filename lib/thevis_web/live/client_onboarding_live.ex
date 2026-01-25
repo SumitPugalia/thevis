@@ -37,7 +37,7 @@ defmodule ThevisWeb.ClientOnboardingLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="mx-auto max-w-3xl">
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
           <div class="mb-8">
