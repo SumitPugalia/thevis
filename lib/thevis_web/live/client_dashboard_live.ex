@@ -14,10 +14,7 @@ defmodule ThevisWeb.ClientDashboardLive do
     # current_user is now set by the on_mount hook
     current_user = socket.assigns[:current_user]
 
-    IO.inspect(current_user != nil, label: "DASHBOARD MOUNT - Current user exists")
-
     if current_user do
-      IO.inspect(current_user.id, label: "DASHBOARD MOUNT - User ID")
       companies = get_user_companies(current_user)
 
       {:ok,
@@ -27,8 +24,6 @@ defmodule ThevisWeb.ClientDashboardLive do
        |> assign(:products, [])
        |> assign(:projects, [])}
     else
-      IO.inspect("DASHBOARD MOUNT - No current user, redirecting", label: "AUTH ERROR")
-
       {:ok,
        socket
        |> put_flash(:error, "You must log in to access this page.")
@@ -66,7 +61,7 @@ defmodule ThevisWeb.ClientDashboardLive do
           <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p class="mt-2 text-sm text-gray-600">Welcome back, {@current_user.name}</p>
         </div>
-        
+
     <!-- Companies Section -->
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
@@ -105,7 +100,7 @@ defmodule ThevisWeb.ClientDashboardLive do
             </div>
           <% end %>
         </div>
-        
+
     <!-- Quick Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">

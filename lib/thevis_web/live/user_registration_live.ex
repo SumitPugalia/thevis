@@ -115,11 +115,7 @@ defmodule ThevisWeb.UserRegistrationLive do
   end
 
   def handle_event("validate", params, socket) do
-    IO.inspect(params, label: "VALIDATE EVENT - Full params")
-
     terms_accepted = params["terms"] == "true" || params["terms"] == true
-    IO.inspect(terms_accepted, label: "Terms accepted status")
-
     user_params = Map.get(params, "user", %{})
 
     changeset =
@@ -135,30 +131,20 @@ defmodule ThevisWeb.UserRegistrationLive do
 
   def handle_event("toggle_terms", %{"terms" => terms_value}, socket) do
     terms_accepted = terms_value == "true" || terms_value == true
-    IO.inspect(terms_accepted, label: "TOGGLE TERMS - New value")
-
     {:noreply, assign(socket, :terms_accepted, terms_accepted)}
   end
 
   def handle_event("toggle_terms", _params, socket) do
     # Toggle if no value provided
     new_value = !socket.assigns[:terms_accepted]
-    IO.inspect(new_value, label: "TOGGLE TERMS - Toggled to")
-
     {:noreply, assign(socket, :terms_accepted, new_value)}
   end
 
   def handle_event("save", params, socket) do
-    IO.inspect(params, label: "SIGNUP EVENT - Full params")
-
     user_params = Map.get(params, "user", %{})
     terms_value = Map.get(params, "terms")
-    IO.inspect(terms_value, label: "SIGNUP EVENT - Terms value")
-    IO.inspect(user_params["email"], label: "SIGNUP EVENT - Email")
 
     unless terms_value == "true" || terms_value == true do
-      IO.inspect("SIGNUP FAILED - Terms not accepted", label: "AUTH")
-
       {:noreply,
        socket
        |> put_flash(:error, "Please accept the Terms of Service and Privacy Policy to continue.")
@@ -167,17 +153,13 @@ defmodule ThevisWeb.UserRegistrationLive do
       user_params = Map.put(user_params, "role", "client")
 
       case Accounts.create_user(user_params) do
-        {:ok, user} ->
-          IO.inspect(user.id, label: "SIGNUP SUCCESS - User ID")
-          IO.inspect(user.email, label: "SIGNUP SUCCESS - Email")
-
+        {:ok, _user} ->
           {:noreply,
            socket
            |> put_flash(:info, "Account created successfully! Please sign in.")
            |> push_navigate(to: ~p"/login")}
 
         {:error, %Ecto.Changeset{} = changeset} ->
-          IO.inspect(changeset.errors, label: "SIGNUP FAILED - Validation errors")
           {:noreply, assign(socket, :form, to_form(changeset))}
       end
     end

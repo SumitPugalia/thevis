@@ -14,15 +14,10 @@ defmodule ThevisWeb.Plugs.RequireAuthenticatedUser do
     # Guardian.Plug.EnsureAuthenticated already verified the token
     # Ensure current_user is set from Guardian resource
     resource = Guardian.Plug.current_resource(conn)
-    IO.inspect(resource != nil, label: "REQUIRE AUTH - Resource exists after EnsureAuthenticated")
 
     if resource do
       assign(conn, :current_user, resource)
     else
-      IO.inspect("REQUIRE AUTH - No resource found even after EnsureAuthenticated!",
-        label: "AUTH ERROR"
-      )
-
       conn
     end
   end
