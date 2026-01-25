@@ -20,14 +20,17 @@ defmodule ThevisWeb.Router do
     live "/", CompanyLive.Index, :index
     live "/companies", CompanyLive.Index, :index
     live "/companies/new", CompanyLive.Index, :new
+    live "/companies/:id", CompanyLive.Show, :show
     live "/companies/:id/edit", CompanyLive.Index, :edit
 
     live "/products", ProductLive.Index, :index
     live "/products/new", ProductLive.Index, :new
+    live "/products/:id", ProductLive.Show, :show
     live "/products/:id/edit", ProductLive.Index, :edit
 
     live "/projects", ProjectLive.Index, :index
     live "/projects/new", ProjectLive.Index, :new
+    live "/projects/:id", ProjectLive.Show, :show
     live "/projects/:id/edit", ProjectLive.Index, :edit
   end
 
