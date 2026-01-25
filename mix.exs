@@ -40,6 +40,7 @@ defmodule Thevis.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      # Phoenix core
       {:phoenix, "~> 1.8.1"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
@@ -47,8 +48,9 @@ defmodule Thevis.MixProject do
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.1.0"},
-      {:lazy_html, ">= 0.1.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.3"},
+
+      # Assets
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
       {:heroicons,
@@ -58,14 +60,49 @@ defmodule Thevis.MixProject do
        app: false,
        compile: false,
        depth: 1},
-      {:swoosh, "~> 1.16"},
+
+      # Background jobs
+      {:oban, "~> 2.17"},
+
+      # Database & Vector Store
+      {:pgvector, "~> 0.3.1"},
+
+      # HTTP & API
       {:req, "~> 0.5"},
+      {:jason, "~> 1.2"},
+
+      # Configuration & Utilities
+      {:nimble_options, "~> 1.0"},
+      {:gettext, "~> 0.26"},
+
+      # Security & Encryption
+      {:cloak_ecto, "~> 1.2"},
+
+      # PDF Generation
+      {:pdf_generator, "~> 0.6.2"},
+
+      # Email (optional, for notifications)
+      {:swoosh, "~> 1.16"},
+
+      # Telemetry
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
-      {:gettext, "~> 0.26"},
-      {:jason, "~> 1.2"},
+
+      # Deployment
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+
+      # Testing
+      {:lazy_html, ">= 0.1.0", only: :test},
+      {:ex_machina, "~> 2.7", only: :test},
+      {:mox, "~> 1.0", only: :test},
+      {:stream_data, "~> 0.6", only: :test},
+
+      # Documentation
+      {:ex_doc, "~> 0.30", only: :dev, runtime: false},
+
+      # Optional: Data pipelines (for future use)
+      {:gen_stage, "~> 1.2"}
     ]
   end
 
