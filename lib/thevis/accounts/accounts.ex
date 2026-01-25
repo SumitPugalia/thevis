@@ -386,7 +386,7 @@ defmodule Thevis.Accounts do
 
   """
   def assign_role(%User{} = user, %Company{} = company, role_type)
-      when role_type in [:client, :consultant] do
+      when role_type in [:client, :consultant, :owner] do
     %Role{}
     |> Role.changeset(%{user_id: user.id, company_id: company.id, role_type: role_type})
     |> Repo.insert()

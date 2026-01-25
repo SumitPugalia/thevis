@@ -10,7 +10,7 @@ defmodule Thevis.Accounts.Role do
   @foreign_key_type :binary_id
 
   schema "roles" do
-    field :role_type, Ecto.Enum, values: [:consultant, :client]
+    field :role_type, Ecto.Enum, values: [:consultant, :client, :owner]
 
     belongs_to :user, Thevis.Accounts.User
     belongs_to :company, Thevis.Accounts.Company

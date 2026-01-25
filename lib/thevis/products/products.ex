@@ -90,8 +90,20 @@ defmodule Thevis.Products do
 
   """
   def create_product(%Company{} = company, attrs \\ %{}) do
+    # Normalize keys to strings to avoid mixed key errors
+    # Ecto.Changeset.cast handles both atom and string keys, but mixing them causes errors
+    normalized_attrs =
+      attrs
+      |> Enum.map(fn
+        {k, v} when is_atom(k) -> {Atom.to_string(k), v}
+        {k, v} -> {k, v}
+      end)
+      |> Map.new()
+
+    attrs_with_company = Map.put(normalized_attrs, "company_id", company.id)
+
     %Product{}
-    |> Product.changeset(Map.put(attrs, :company_id, company.id))
+    |> Product.changeset(attrs_with_company)
     |> Repo.insert()
   end
 

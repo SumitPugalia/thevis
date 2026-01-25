@@ -6,6 +6,7 @@ defmodule ThevisWeb.ClientOnboardingLive do
   use ThevisWeb, :live_view
 
   alias Thevis.Accounts
+  alias Thevis.Products
 
   on_mount {ThevisWeb.Live.Hooks.AssignCurrentUser, :assign_current_user}
 
@@ -20,6 +21,8 @@ defmodule ThevisWeb.ClientOnboardingLive do
        |> assign(:step, 1)
        |> assign(:company, nil)
        |> assign(:products, [])
+       |> assign(:show_product_form, false)
+       |> assign(:product_form, to_form(%{}, as: "product"))
        |> assign(:form, to_form(%{}, as: "company"))}
     else
       {:ok,
@@ -162,7 +165,7 @@ defmodule ThevisWeb.ClientOnboardingLive do
                         <div class="flex-1">
                           <h3 class="font-medium text-gray-900">{product.name}</h3>
                           <p class="text-sm text-gray-600">
-                            {product.category} - {String.capitalize(to_string(product.product_type))}
+                            {String.capitalize(to_string(product.product_type))}
                           </p>
                         </div>
                         <button
@@ -177,13 +180,68 @@ defmodule ThevisWeb.ClientOnboardingLive do
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    phx-click="show_add_product"
-                    class="mt-4 w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors"
-                  >
-                    <.icon name="hero-plus" class="w-5 h-5 inline mr-2" /> Add Product
-                  </button>
+                  <%= if @show_product_form do %>
+                    <div class="mt-4 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                      <h3 class="text-lg font-semibold text-gray-900 mb-4">Add Product</h3>
+                      <.form
+                        for={@product_form}
+                        id="product-form"
+                        phx-submit="add_product"
+                        phx-change="validate_product"
+                        class="space-y-4"
+                      >
+                        <.input
+                          field={@product_form[:name]}
+                          type="text"
+                          label="Product Name"
+                          required
+                          placeholder="e.g., Glow Serum"
+                        />
+                        <.input
+                          field={@product_form[:product_type]}
+                          type="select"
+                          label="Product Type"
+                          required
+                          options={[
+                            {"Cosmetic", "cosmetic"},
+                            {"Edible", "edible"},
+                            {"Sweet", "sweet"},
+                            {"D2C", "d2c"},
+                            {"Fashion", "fashion"},
+                            {"Wellness", "wellness"},
+                            {"Other", "other"}
+                          ]}
+                        />
+                        <.input
+                          field={@product_form[:description]}
+                          type="textarea"
+                          label="Description"
+                          placeholder="Brief description of the product"
+                        />
+
+                        <div class="flex gap-3">
+                          <.button
+                            type="button"
+                            phx-click="cancel_add_product"
+                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg"
+                          >
+                            Cancel
+                          </.button>
+                          <.button class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg">
+                            Add Product
+                          </.button>
+                        </div>
+                      </.form>
+                    </div>
+                  <% else %>
+                    <button
+                      type="button"
+                      phx-click="show_add_product"
+                      class="mt-4 w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors"
+                    >
+                      <.icon name="hero-plus" class="w-5 h-5 inline mr-2" /> Add Product
+                    </button>
+                  <% end %>
                 <% else %>
                   <p class="text-sm text-gray-600">
                     Your company will be optimized as a service. You can add competitor companies if needed.
@@ -271,14 +329,27 @@ defmodule ThevisWeb.ClientOnboardingLive do
 
     case Accounts.create_company(company_params) do
       {:ok, company} ->
-        # Assign role to link user to company
-        Accounts.assign_role(current_user, company, :owner)
+        # Assign owner role to link user to company
+        case Accounts.assign_role(current_user, company, :owner) do
+          {:ok, _role} ->
+            {:noreply,
+             socket
+             |> assign(:company, company)
+             |> assign(:step, 2)
+             |> assign(:show_product_form, false)
+             |> assign(:product_form, to_form(%{}, as: "product"))
+             |> stream(:products, [], reset: true)}
 
-        {:noreply,
-         socket
-         |> assign(:company, company)
-         |> assign(:step, 2)
-         |> stream(:products, [], reset: true)}
+          {:error, _changeset} ->
+            {:noreply,
+             socket
+             |> put_flash(:error, "Failed to assign role. Please try again.")
+             |> assign(:company, company)
+             |> assign(:step, 2)
+             |> assign(:show_product_form, false)
+             |> assign(:product_form, to_form(%{}, as: "product"))
+             |> stream(:products, [], reset: true)}
+        end
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -287,8 +358,60 @@ defmodule ThevisWeb.ClientOnboardingLive do
 
   @impl true
   def handle_event("show_add_product", _params, socket) do
-    # This will be handled by a modal or separate form
-    {:noreply, socket}
+    {:noreply,
+     socket
+     |> assign(:show_product_form, true)
+     |> assign(:product_form, to_form(%{}, as: "product"))}
+  end
+
+  @impl true
+  def handle_event("cancel_add_product", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_product_form, false)
+     |> assign(:product_form, to_form(%{}, as: "product"))}
+  end
+
+  @impl true
+  def handle_event("validate_product", %{"product" => product_params}, socket) do
+    company = socket.assigns[:company]
+
+    changeset =
+      %Products.Product{}
+      |> Products.Product.changeset(Map.merge(product_params, %{"company_id" => company.id}))
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign(socket, product_form: to_form(changeset, as: "product"))}
+  end
+
+  @impl true
+  def handle_event("add_product", %{"product" => product_params}, socket) do
+    company = socket.assigns[:company]
+
+    changeset =
+      %Products.Product{}
+      |> Products.Product.changeset(Map.merge(product_params, %{"company_id" => company.id}))
+
+    if changeset.valid? do
+      product_data = %{
+        name: Ecto.Changeset.get_field(changeset, :name),
+        product_type: Ecto.Changeset.get_field(changeset, :product_type),
+        description: Ecto.Changeset.get_field(changeset, :description),
+        company_id: company.id
+      }
+
+      # Add product to stream (we'll save to DB later in complete_onboarding)
+      temp_id = "product-#{System.unique_integer([:positive])}"
+      product = Map.merge(product_data, %{id: temp_id})
+
+      {:noreply,
+       socket
+       |> stream(:products, product)
+       |> assign(:show_product_form, false)
+       |> assign(:product_form, to_form(%{}, as: "product"))}
+    else
+      {:noreply, assign(socket, product_form: to_form(changeset, as: "product"))}
+    end
   end
 
   @impl true
