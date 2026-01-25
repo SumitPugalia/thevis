@@ -7,7 +7,6 @@ defmodule ThevisWeb.ClientDashboardLiveTest do
 
   import Phoenix.LiveViewTest
   alias Thevis.Accounts
-  alias Thevis.Guardian
 
   describe "Dashboard access" do
     test "redirects to login when not authenticated", %{conn: conn} do
@@ -17,7 +16,7 @@ defmodule ThevisWeb.ClientDashboardLiveTest do
 
     test "shows dashboard when authenticated", %{conn: conn} do
       # Create a user
-      {:ok, user} =
+      {:ok, _user} =
         Accounts.create_user(%{
           email: "client@example.com",
           name: "Test Client",

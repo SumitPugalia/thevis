@@ -61,7 +61,7 @@ defmodule ThevisWeb.ClientDashboardLive do
           <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p class="mt-2 text-sm text-gray-600">Welcome back, {@current_user.name}</p>
         </div>
-
+        
     <!-- Companies Section -->
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
@@ -100,7 +100,7 @@ defmodule ThevisWeb.ClientDashboardLive do
             </div>
           <% end %>
         </div>
-
+        
     <!-- Quick Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">

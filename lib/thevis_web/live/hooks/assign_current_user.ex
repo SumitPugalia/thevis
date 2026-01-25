@@ -3,7 +3,6 @@ defmodule ThevisWeb.Live.Hooks.AssignCurrentUser do
   LiveView on_mount hook to assign current_user from session token to socket.
   """
 
-  import Phoenix.LiveView
   import Phoenix.Component
   alias Thevis.Guardian
 

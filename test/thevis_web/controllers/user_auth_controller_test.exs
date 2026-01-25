@@ -9,7 +9,7 @@ defmodule ThevisWeb.UserAuthControllerTest do
 
   describe "POST /login" do
     test "redirects to dashboard when credentials are valid for client", %{conn: conn} do
-      {:ok, user} =
+      {:ok, _user} =
         Accounts.create_user(%{
           email: "client@example.com",
           name: "Test Client",
@@ -23,11 +23,11 @@ defmodule ThevisWeb.UserAuthControllerTest do
         })
 
       assert redirected_to(conn) == ~p"/dashboard"
-      assert get_flash(conn, :info) =~ "Welcome back!"
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Welcome back!"
     end
 
     test "redirects to admin when credentials are valid for consultant", %{conn: conn} do
-      {:ok, user} =
+      {:ok, _user} =
         Accounts.create_user(%{
           email: "consultant@example.com",
           name: "Test Consultant",
@@ -41,7 +41,7 @@ defmodule ThevisWeb.UserAuthControllerTest do
         })
 
       assert redirected_to(conn) == ~p"/admin/companies"
-      assert get_flash(conn, :info) =~ "Welcome back!"
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Welcome back!"
     end
 
     test "redirects to login with error when credentials are invalid", %{conn: conn} do
@@ -51,13 +51,13 @@ defmodule ThevisWeb.UserAuthControllerTest do
         })
 
       assert redirected_to(conn) == ~p"/login"
-      assert get_flash(conn, :error) =~ "Invalid email or password"
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Invalid email or password"
     end
   end
 
   describe "DELETE /logout" do
     test "logs out the user and redirects to home", %{conn: conn} do
-      {:ok, user} =
+      {:ok, _user} =
         Accounts.create_user(%{
           email: "client@example.com",
           name: "Test Client",
@@ -75,7 +75,7 @@ defmodule ThevisWeb.UserAuthControllerTest do
       conn = delete(conn, ~p"/logout")
 
       assert redirected_to(conn) == ~p"/"
-      assert get_flash(conn, :info) =~ "Logged out successfully"
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Logged out successfully"
     end
   end
 end
