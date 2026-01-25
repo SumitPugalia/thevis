@@ -53,12 +53,11 @@ defmodule ThevisWeb.Layouts do
             <div class="flex">
               <div class="flex-shrink-0 flex items-center">
                 <.link navigate={~p"/"} class="flex items-center gap-2">
-                  <span class={if(is_landing_page, do: "text-2xl", else: "text-xl") <> " font-bold text-gray-900"}>
-                    thevis
-                  </span>
-                  <span class={if(is_landing_page, do: "text-sm", else: "text-xs") <> " text-gray-500"}>
-                    .ai
-                  </span>
+                  <img
+                    src={~p"/images/thevis.png"}
+                    alt="thevis.ai"
+                    class={if(is_landing_page, do: "h-8", else: "h-6")}
+                  />
                 </.link>
               </div>
               <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
