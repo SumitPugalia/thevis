@@ -24,6 +24,7 @@ defmodule Thevis.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import Thevis.DataCase
+      import Thevis.Factory
     end
   end
 

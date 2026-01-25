@@ -203,9 +203,10 @@ get_company(id)
 list_companies(opts)
 list_companies_with_products_in_launch_window(opts)  # Get companies with products in launch window
 
-add_competitor_company(company, attrs)  # For company-level optimization
-remove_competitor_company(company, competitor_id)
-list_competitor_companies(company)
+add_competitor(company, competitor_attrs)  # Add competitor to array
+remove_competitor(company, competitor_index)  # Remove competitor by index
+update_competitor(company, competitor_index, competitor_attrs)  # Update competitor by index
+list_competitors(company)  # Returns competitors array
 
 assign_role(user, company, role)
 ```
@@ -221,6 +222,7 @@ assign_role(user, company, role)
 - id, name, domain, industry
 - description, website_url
 - company_type: enum(:product_based, :service_based)  # Determines what we optimize
+- competitors: array of maps (JSONB)  # Array of competitor companies
 - inserted_at, updated_at
 
 **Note:** 
@@ -288,24 +290,22 @@ list_competitor_products(product)
 
 **Purpose:** Track competitor companies when optimizing companies directly
 
-**Modules:**
-- `Thevis.Accounts.CompetitorCompany` - Competitor company schema
+**Implementation:** Competitors are stored as an array (JSONB) on the Company schema
 
 **Key Functions:**
 ```elixir
 # Thevis.Accounts
-add_competitor_company(company, attrs)
-remove_competitor_company(company, competitor_id)
-list_competitor_companies(company)
+add_competitor(company, competitor_attrs)  # Add competitor to array
+remove_competitor(company, competitor_index)  # Remove competitor by index
+update_competitor(company, competitor_index, competitor_attrs)  # Update competitor by index
+list_competitors(company)  # Returns competitors array
 ```
 
-**Schema Fields:**
-
-**CompetitorCompany:**
-- id, company_id, name  # Company being optimized
-- competitor_company_id: uuid  # The competitor company
-- description: text (nullable)
-- inserted_at, updated_at
+**Competitor Structure (stored in competitors array):**
+- name: string
+- domain: string
+- industry: string (optional)
+- notes: string (optional)
 
 ### 4.3 Projects Context
 
@@ -862,6 +862,8 @@ Thevis.Wikis.track_wiki_performance(wiki_page)
   industry: string,
   description: text,
   website_url: string,
+  company_type: enum(:product_based, :service_based),
+  competitors: [%{name: string, domain: string, industry: string, notes: string}],  # JSONB array
   inserted_at: datetime,
   updated_at: datetime
 }
@@ -1896,7 +1898,7 @@ POST   /api/reports/:id/generate     # Generate report
 3. `create_roles` - Role table (user-company association)
 4. `create_products` - Product table (one type of optimizable entity - includes product_type, category, launch dates)
 5. `create_competitor_products` - CompetitorProduct table (competitor products)
-6. `create_competitor_companies` - CompetitorCompany table (competitor companies for company-level optimization)
+6. `add_competitors_to_companies` - Add competitors JSONB array column to companies table
 7. `create_projects` - Project table (polymorphic: optimizable_type + optimizable_id, includes project_type, urgency_level)
 8. `create_scan_runs` - ScanRun table
 9. `create_scan_results` - ScanResult table

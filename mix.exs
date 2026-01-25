@@ -77,6 +77,7 @@ defmodule Thevis.MixProject do
 
       # Security & Encryption
       {:cloak_ecto, "~> 1.2"},
+      {:bcrypt_elixir, "~> 3.0"},
 
       # PDF Generation
       {:pdf_generator, "~> 0.6.2"},
