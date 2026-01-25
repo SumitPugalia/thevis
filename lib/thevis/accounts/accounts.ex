@@ -99,6 +99,58 @@ defmodule Thevis.Accounts do
     |> Repo.update()
   end
 
+  @doc """
+  Gets a user by email.
+
+  ## Examples
+
+      iex> get_user_by_email("user@example.com")
+      %User{}
+
+      iex> get_user_by_email("nonexistent@example.com")
+      nil
+
+  """
+  def get_user_by_email(email) when is_binary(email) do
+    Repo.get_by(User, email: email)
+  end
+
+  @doc """
+  Gets a user by email and password.
+
+  ## Examples
+
+      iex> get_user_by_email_and_password("user@example.com", "valid_password")
+      {:ok, %User{}}
+
+      iex> get_user_by_email_and_password("user@example.com", "invalid_password")
+      {:error, :invalid_credentials}
+
+  """
+  def get_user_by_email_and_password(email, password)
+      when is_binary(email) and is_binary(password) do
+    user = Repo.get_by(User, email: email)
+
+    cond do
+      user && User.valid_password?(user, password) ->
+        {:ok, user}
+
+      user ->
+        {:error, :invalid_credentials}
+
+      true ->
+        Bcrypt.no_user_verify()
+        {:error, :invalid_credentials}
+    end
+  end
+
+  @doc """
+  Returns a changeset for user registration.
+  """
+  def change_user_registration(%User{} = user, attrs \\ %{}) do
+    User.registration_changeset(user, attrs, hash_password: false)
+  end
+
   ## Companies
 
   @doc """

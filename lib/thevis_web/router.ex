@@ -8,13 +8,43 @@ defmodule ThevisWeb.Router do
     plug :put_root_layout, html: {ThevisWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug Guardian.Plug.Pipeline
+    plug ThevisWeb.Plugs.FetchCurrentUser
+  end
+
+  pipeline :require_authenticated_user do
+    plug Guardian.Plug.EnsureAuthenticated
+    plug ThevisWeb.Plugs.RequireAuthenticatedUser
   end
 
   pipeline :api do
     plug :accepts, ["json"]
   end
 
+  # Public routes (no authentication required)
   scope "/", ThevisWeb do
+    pipe_through :browser
+
+    # Home redirects to dashboard if logged in, otherwise to login
+    get "/", PageController, :home
+
+    # Authentication routes
+    live "/register", UserRegistrationLive, :new
+    live "/login", UserLoginLive, :new
+    post "/login", UserAuthController, :create
+    delete "/logout", UserAuthController, :delete
+  end
+
+  # Protected client routes (authentication required)
+  scope "/", ThevisWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live "/dashboard", ClientDashboardLive, :index
+    live "/onboarding", ClientOnboardingLive, :index
+  end
+
+  # Admin/Consultant routes (for now, no auth - will add later)
+  scope "/admin", ThevisWeb do
     pipe_through :browser
 
     live "/", CompanyLive.Index, :index

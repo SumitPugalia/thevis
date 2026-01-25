@@ -60,6 +60,17 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Guardian configuration
+# For development, we use a default secret. In production, set GUARDIAN_SECRET_KEY env var
+config :thevis, Thevis.Guardian,
+  issuer: "thevis",
+  secret_key:
+    {System, :get_env,
+     [
+       "GUARDIAN_SECRET_KEY",
+       "ThPFmobEq82lpWytbAOyoakQEihAAOhDdMXgLrBz7YEeVNsOGNMSe//0Z8vh2QG"
+     ]}
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

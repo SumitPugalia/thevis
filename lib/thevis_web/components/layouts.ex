@@ -48,25 +48,59 @@ defmodule ThevisWeb.Layouts do
                 </.link>
               </div>
               <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                <.link
-                  navigate={~p"/companies"}
-                  class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                >
-                  Companies
-                </.link>
-                <.link
-                  navigate={~p"/products"}
-                  class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                >
-                  Products
-                </.link>
-                <.link
-                  navigate={~p"/projects"}
-                  class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                >
-                  Projects
-                </.link>
+                <%= if assigns[:current_user] do %>
+                  <.link
+                    navigate={~p"/dashboard"}
+                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    Dashboard
+                  </.link>
+                <% else %>
+                  <.link
+                    navigate={~p"/admin/companies"}
+                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    Companies
+                  </.link>
+                  <.link
+                    navigate={~p"/admin/products"}
+                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    Products
+                  </.link>
+                  <.link
+                    navigate={~p"/admin/projects"}
+                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    Projects
+                  </.link>
+                <% end %>
               </div>
+            </div>
+            <div class="flex items-center space-x-4">
+              <%= if assigns[:current_user] do %>
+                <span class="text-sm text-gray-600">{assigns.current_user.name}</span>
+                <.link
+                  href={~p"/logout"}
+                  method="delete"
+                  class="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Sign out
+                </.link>
+              <% else %>
+                <.link
+                  navigate={~p"/login"}
+                  class="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Sign in
+                </.link>
+                <.link
+                  navigate={~p"/register"}
+                  class="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                >
+                  Sign up
+                </.link>
+              <% end %>
             </div>
           </div>
         </div>
