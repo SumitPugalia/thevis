@@ -1,0 +1,77 @@
+<Layouts.app flash={@flash}>
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Companies</h1>
+        <p class="mt-2 text-sm text-gray-600">Manage your client companies</p>
+      </div>
+      <.link
+        navigate={~p"/companies/new"}
+        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        <.icon name="hero-plus" class="w-5 h-5" /> New Company
+      </.link>
+    </div>
+
+    <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Name
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Domain
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Industry
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Type
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200" id="companies" phx-update="stream">
+            <tr :for={{id, company} <- @streams.companies} id={id} class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{company.name}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">{company.domain}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">{company.industry}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{company_type_badge(company.company_type)}"}>
+                  {String.replace(to_string(company.company_type), "_", " ")
+                  |> String.capitalize()}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="flex items-center gap-2">
+                  <.link
+                    navigate={~p"/companies/#{company.id}"}
+                    class="text-blue-600 hover:text-blue-900"
+                  >
+                    View
+                  </.link>
+                  <.link
+                    navigate={~p"/companies/#{company.id}/edit"}
+                    class="text-gray-600 hover:text-gray-900"
+                  >
+                    Edit
+                  </.link>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</Layouts.app>

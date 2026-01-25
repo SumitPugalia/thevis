@@ -192,6 +192,22 @@ defmodule Thevis.Accounts do
     |> Repo.update()
   end
 
+  @doc """
+  Deletes a company.
+
+  ## Examples
+
+      iex> delete_company(company)
+      {:ok, %Company{}}
+
+      iex> delete_company(company)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_company(%Company{} = company) do
+    Repo.delete(company)
+  end
+
   ## Competitors
 
   @doc """

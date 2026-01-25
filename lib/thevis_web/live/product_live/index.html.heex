@@ -1,0 +1,86 @@
+<Layouts.app flash={@flash}>
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Products</h1>
+        <p class="mt-2 text-sm text-gray-600">Manage products for optimization</p>
+      </div>
+      <.link
+        navigate={~p"/products/new"}
+        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        <.icon name="hero-plus" class="w-5 h-5" /> New Product
+      </.link>
+    </div>
+
+    <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Name
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Category
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Type
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Launch Window
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200" id="products" phx-update="stream">
+            <tr :for={{id, product} <- @streams.products} id={id} class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{product.name}</div>
+                <div class="text-sm text-gray-500">{product.description}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">{product.category || "-"}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{product_type_badge(product.product_type)}"}>
+                  {String.capitalize(to_string(product.product_type))}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">
+                  <%= if product.launch_window_start && product.launch_window_end do %>
+                    {Calendar.strftime(product.launch_window_start, "%b %d")} - {Calendar.strftime(
+                      product.launch_window_end,
+                      "%b %d"
+                    )}
+                  <% else %>
+                    <span class="text-gray-400">-</span>
+                  <% end %>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="flex items-center gap-2">
+                  <.link
+                    navigate={~p"/products/#{product.id}"}
+                    class="text-blue-600 hover:text-blue-900"
+                  >
+                    View
+                  </.link>
+                  <.link
+                    navigate={~p"/products/#{product.id}/edit"}
+                    class="text-gray-600 hover:text-gray-900"
+                  >
+                    Edit
+                  </.link>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</Layouts.app>
