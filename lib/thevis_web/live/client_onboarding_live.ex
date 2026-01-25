@@ -6,8 +6,8 @@ defmodule ThevisWeb.ClientOnboardingLive do
   use ThevisWeb, :live_view
 
   alias Thevis.Accounts
-  alias Thevis.Products
-  alias Thevis.Projects
+
+  on_mount {ThevisWeb.Live.Hooks.AssignCurrentUser, :assign_current_user}
 
   @impl true
   def mount(_params, _session, socket) do

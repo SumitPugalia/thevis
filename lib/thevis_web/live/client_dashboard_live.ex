@@ -6,14 +6,18 @@ defmodule ThevisWeb.ClientDashboardLive do
   use ThevisWeb, :live_view
 
   alias Thevis.Accounts
-  alias Thevis.Products
-  alias Thevis.Projects
+
+  on_mount {ThevisWeb.Live.Hooks.AssignCurrentUser, :assign_current_user}
 
   @impl true
   def mount(_params, _session, socket) do
+    # current_user is now set by the on_mount hook
     current_user = socket.assigns[:current_user]
 
+    IO.inspect(current_user != nil, label: "DASHBOARD MOUNT - Current user exists")
+
     if current_user do
+      IO.inspect(current_user.id, label: "DASHBOARD MOUNT - User ID")
       companies = get_user_companies(current_user)
 
       {:ok,
@@ -23,6 +27,8 @@ defmodule ThevisWeb.ClientDashboardLive do
        |> assign(:products, [])
        |> assign(:projects, [])}
     else
+      IO.inspect("DASHBOARD MOUNT - No current user, redirecting", label: "AUTH ERROR")
+
       {:ok,
        socket
        |> put_flash(:error, "You must log in to access this page.")

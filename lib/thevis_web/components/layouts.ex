@@ -36,75 +36,79 @@ defmodule ThevisWeb.Layouts do
   def app(assigns) do
     ~H"""
     <div class="min-h-screen bg-gray-50">
-      <!-- Navigation Header -->
-      <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-between h-16">
-            <div class="flex">
-              <div class="flex-shrink-0 flex items-center">
-                <.link navigate={~p"/"} class="flex items-center gap-2">
-                  <span class="text-xl font-bold text-gray-900">thevis</span>
-                  <span class="text-xs text-gray-500">.ai</span>
-                </.link>
+      <!-- Navigation Header (only shown for authenticated pages, not landing page) -->
+      <%= unless Map.get(assigns, :page_title) == "thevis.ai - Making brands visible to AI" do %>
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+              <div class="flex">
+                <div class="flex-shrink-0 flex items-center">
+                  <.link navigate={~p"/"} class="flex items-center gap-2">
+                    <span class="text-xl font-bold text-gray-900">thevis</span>
+                    <span class="text-xs text-gray-500">.ai</span>
+                  </.link>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                  <%= if assigns[:current_user] do %>
+                    <%= if assigns[:current_user].role == :consultant do %>
+                      <.link
+                        navigate={~p"/admin/companies"}
+                        class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      >
+                        Companies
+                      </.link>
+                      <.link
+                        navigate={~p"/admin/products"}
+                        class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      >
+                        Products
+                      </.link>
+                      <.link
+                        navigate={~p"/admin/projects"}
+                        class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      >
+                        Projects
+                      </.link>
+                    <% else %>
+                      <.link
+                        navigate={~p"/dashboard"}
+                        class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      >
+                        Dashboard
+                      </.link>
+                    <% end %>
+                  <% end %>
+                </div>
               </div>
-              <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <div class="flex items-center space-x-4">
                 <%= if assigns[:current_user] do %>
+                  <span class="text-sm text-gray-600">{assigns.current_user.name}</span>
                   <.link
-                    navigate={~p"/dashboard"}
-                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    href={~p"/logout"}
+                    method="delete"
+                    class="text-sm text-gray-600 hover:text-gray-900"
                   >
-                    Dashboard
+                    Sign out
                   </.link>
                 <% else %>
                   <.link
-                    navigate={~p"/admin/companies"}
-                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    navigate={~p"/login"}
+                    class="text-sm text-gray-600 hover:text-gray-900"
                   >
-                    Companies
+                    Sign in
                   </.link>
                   <.link
-                    navigate={~p"/admin/products"}
-                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    navigate={~p"/register"}
+                    class="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
                   >
-                    Products
-                  </.link>
-                  <.link
-                    navigate={~p"/admin/projects"}
-                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  >
-                    Projects
+                    Sign up
                   </.link>
                 <% end %>
               </div>
             </div>
-            <div class="flex items-center space-x-4">
-              <%= if assigns[:current_user] do %>
-                <span class="text-sm text-gray-600">{assigns.current_user.name}</span>
-                <.link
-                  href={~p"/logout"}
-                  method="delete"
-                  class="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Sign out
-                </.link>
-              <% else %>
-                <.link
-                  navigate={~p"/login"}
-                  class="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Sign in
-                </.link>
-                <.link
-                  navigate={~p"/register"}
-                  class="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                >
-                  Sign up
-                </.link>
-              <% end %>
-            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      <% end %>
       
     <!-- Main Content -->
       <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -33,7 +33,7 @@ defmodule ThevisWeb.ProjectLive.Show do
             <p class="mt-2 text-sm text-gray-600">{@project.description || "-"}</p>
           </div>
           <.link
-            navigate={~p"/projects/#{@project.id}/edit"}
+            navigate={~p"/admin/projects/#{@project.id}/edit"}
             class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
             <.icon name="hero-pencil" class="w-5 h-5" /> Edit

@@ -6,7 +6,7 @@
         <p class="mt-2 text-sm text-gray-600">Manage optimization projects</p>
       </div>
       <.link
-        navigate={~p"/projects/new"}
+        navigate={~p"/admin/projects/new"}
         class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
       >
         <.icon name="hero-plus" class="w-5 h-5" /> New Project
@@ -68,13 +68,13 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center gap-2">
                   <.link
-                    navigate={~p"/projects/#{project.id}"}
+                    navigate={~p"/admin/projects/#{project.id}"}
                     class="text-blue-600 hover:text-blue-900"
                   >
                     View
                   </.link>
                   <.link
-                    navigate={~p"/projects/#{project.id}/edit"}
+                    navigate={~p"/admin/projects/#{project.id}/edit"}
                     class="text-gray-600 hover:text-gray-900"
                   >
                     Edit

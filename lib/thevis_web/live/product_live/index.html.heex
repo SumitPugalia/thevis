@@ -6,7 +6,7 @@
         <p class="mt-2 text-sm text-gray-600">Manage products for optimization</p>
       </div>
       <.link
-        navigate={~p"/products/new"}
+        navigate={~p"/admin/products/new"}
         class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
       >
         <.icon name="hero-plus" class="w-5 h-5" /> New Product
@@ -64,13 +64,13 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center gap-2">
                   <.link
-                    navigate={~p"/products/#{product.id}"}
+                    navigate={~p"/admin/products/#{product.id}"}
                     class="text-blue-600 hover:text-blue-900"
                   >
                     View
                   </.link>
                   <.link
-                    navigate={~p"/products/#{product.id}/edit"}
+                    navigate={~p"/admin/products/#{product.id}/edit"}
                     class="text-gray-600 hover:text-gray-900"
                   >
                     Edit

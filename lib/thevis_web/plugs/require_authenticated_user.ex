@@ -5,11 +5,25 @@ defmodule ThevisWeb.Plugs.RequireAuthenticatedUser do
   the user is authenticated if we reach here.
   """
 
+  import Plug.Conn
+  alias Thevis.Guardian
+
   def init(opts), do: opts
 
   def call(conn, _opts) do
     # Guardian.Plug.EnsureAuthenticated already verified the token
-    # and set current_user in assigns via Guardian.Plug.current_resource
-    conn
+    # Ensure current_user is set from Guardian resource
+    resource = Guardian.Plug.current_resource(conn)
+    IO.inspect(resource != nil, label: "REQUIRE AUTH - Resource exists after EnsureAuthenticated")
+
+    if resource do
+      assign(conn, :current_user, resource)
+    else
+      IO.inspect("REQUIRE AUTH - No resource found even after EnsureAuthenticated!",
+        label: "AUTH ERROR"
+      )
+
+      conn
+    end
   end
 end

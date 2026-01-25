@@ -8,12 +8,24 @@ defmodule ThevisWeb.Router do
     plug :put_root_layout, html: {ThevisWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug Guardian.Plug.Pipeline
+
+    plug Guardian.Plug.Pipeline,
+      module: Thevis.Guardian,
+      error_handler: ThevisWeb.Plugs.GuardianErrorHandler
+
+    plug Guardian.Plug.VerifySession, claims: %{"typ" => "access"}
+    plug Guardian.Plug.LoadResource, allow_blank: true
     plug ThevisWeb.Plugs.FetchCurrentUser
   end
 
   pipeline :require_authenticated_user do
-    plug Guardian.Plug.EnsureAuthenticated
+    # Ensure resource is loaded before checking authentication
+    plug Guardian.Plug.LoadResource, allow_blank: false
+
+    plug Guardian.Plug.EnsureAuthenticated,
+      error_handler: ThevisWeb.Plugs.GuardianErrorHandler,
+      key: :default
+
     plug ThevisWeb.Plugs.RequireAuthenticatedUser
   end
 
@@ -25,8 +37,8 @@ defmodule ThevisWeb.Router do
   scope "/", ThevisWeb do
     pipe_through :browser
 
-    # Home redirects to dashboard if logged in, otherwise to login
-    get "/", PageController, :home
+    # Landing page
+    live "/", PageLive, :index
 
     # Authentication routes
     live "/register", UserRegistrationLive, :new

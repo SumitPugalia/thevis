@@ -47,20 +47,37 @@ defmodule ThevisWeb.UserRegistrationLive do
               placeholder="Minimum 12 characters"
             />
 
-            <div class="flex items-center">
+            <label class="flex items-start gap-3 cursor-pointer">
               <input
                 id="terms"
                 name="terms"
                 type="checkbox"
-                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                value="true"
+                checked={@terms_accepted}
+                phx-click="toggle_terms"
+                phx-debounce="0"
+                class="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
                 required
               />
-              <label for="terms" class="ml-2 block text-sm text-gray-600">
+              <span class="text-sm text-gray-600">
                 I agree to the
-                <a href="#" class="text-blue-600 hover:text-blue-900">Terms of Service</a>
-                and <a href="#" class="text-blue-600 hover:text-blue-900">Privacy Policy</a>
-              </label>
-            </div>
+                <a
+                  href="#"
+                  class="text-blue-600 hover:text-blue-900 underline"
+                  onclick="event.stopPropagation(); return false;"
+                >
+                  Terms of Service
+                </a>
+                and
+                <a
+                  href="#"
+                  class="text-blue-600 hover:text-blue-900 underline"
+                  onclick="event.stopPropagation(); return false;"
+                >
+                  Privacy Policy
+                </a>
+              </span>
+            </label>
 
             <div>
               <.button
@@ -92,31 +109,77 @@ defmodule ThevisWeb.UserRegistrationLive do
     socket =
       socket
       |> assign(:form, to_form(changeset))
+      |> assign(:terms_accepted, false)
 
     {:ok, socket, temporary_assigns: [form: nil]}
   end
 
-  def handle_event("validate", %{"user" => user_params}, socket) do
+  def handle_event("validate", params, socket) do
+    IO.inspect(params, label: "VALIDATE EVENT - Full params")
+
+    terms_accepted = params["terms"] == "true" || params["terms"] == true
+    IO.inspect(terms_accepted, label: "Terms accepted status")
+
+    user_params = Map.get(params, "user", %{})
+
     changeset =
       %User{}
       |> Accounts.change_user_registration(user_params)
       |> Map.put(:action, :validate)
 
-    {:noreply, assign(socket, form: to_form(changeset))}
+    {:noreply,
+     socket
+     |> assign(:form, to_form(changeset))
+     |> assign(:terms_accepted, terms_accepted)}
   end
 
-  def handle_event("save", %{"user" => user_params}, socket) do
-    user_params = Map.put(user_params, "role", "client")
+  def handle_event("toggle_terms", %{"terms" => terms_value}, socket) do
+    terms_accepted = terms_value == "true" || terms_value == true
+    IO.inspect(terms_accepted, label: "TOGGLE TERMS - New value")
 
-    case Accounts.create_user(user_params) do
-      {:ok, _user} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Account created successfully! Please sign in.")
-         |> push_navigate(to: ~p"/login")}
+    {:noreply, assign(socket, :terms_accepted, terms_accepted)}
+  end
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :form, to_form(changeset))}
+  def handle_event("toggle_terms", _params, socket) do
+    # Toggle if no value provided
+    new_value = !socket.assigns[:terms_accepted]
+    IO.inspect(new_value, label: "TOGGLE TERMS - Toggled to")
+
+    {:noreply, assign(socket, :terms_accepted, new_value)}
+  end
+
+  def handle_event("save", params, socket) do
+    IO.inspect(params, label: "SIGNUP EVENT - Full params")
+
+    user_params = Map.get(params, "user", %{})
+    terms_value = Map.get(params, "terms")
+    IO.inspect(terms_value, label: "SIGNUP EVENT - Terms value")
+    IO.inspect(user_params["email"], label: "SIGNUP EVENT - Email")
+
+    unless terms_value == "true" || terms_value == true do
+      IO.inspect("SIGNUP FAILED - Terms not accepted", label: "AUTH")
+
+      {:noreply,
+       socket
+       |> put_flash(:error, "Please accept the Terms of Service and Privacy Policy to continue.")
+       |> assign(:terms_accepted, false)}
+    else
+      user_params = Map.put(user_params, "role", "client")
+
+      case Accounts.create_user(user_params) do
+        {:ok, user} ->
+          IO.inspect(user.id, label: "SIGNUP SUCCESS - User ID")
+          IO.inspect(user.email, label: "SIGNUP SUCCESS - Email")
+
+          {:noreply,
+           socket
+           |> put_flash(:info, "Account created successfully! Please sign in.")
+           |> push_navigate(to: ~p"/login")}
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          IO.inspect(changeset.errors, label: "SIGNUP FAILED - Validation errors")
+          {:noreply, assign(socket, :form, to_form(changeset))}
+      end
     end
   end
 end
