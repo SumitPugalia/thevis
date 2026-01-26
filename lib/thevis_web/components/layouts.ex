@@ -81,7 +81,14 @@ defmodule ThevisWeb.Layouts do
                   >
                     Projects
                   </.link>
-                  <%= if @current_user.role != :consultant do %>
+                  <%= if @current_user.role == :consultant do %>
+                    <.link
+                      navigate={~p"/admin/dashboard"}
+                      class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    >
+                      Admin Dashboard
+                    </.link>
+                  <% else %>
                     <.link
                       navigate={~p"/dashboard"}
                       class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"

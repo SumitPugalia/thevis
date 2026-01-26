@@ -38,8 +38,8 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
           "user" => %{"email" => consultant.email, "password" => "password1234"}
         })
 
-      # Follow redirect to get proper session
-      assert redirected_to(conn) == ~p"/companies"
+      # Follow redirect to get proper session (consultants go to admin dashboard)
+      assert redirected_to(conn) == ~p"/admin/dashboard"
 
       %{conn: conn, consultant: consultant, company: company, product: product}
     end

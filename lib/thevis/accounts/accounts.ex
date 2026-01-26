@@ -189,6 +189,29 @@ defmodule Thevis.Accounts do
     do: where(query, [c], c.company_type == ^company_type)
 
   @doc """
+  Returns the list of companies for a specific user (via roles).
+
+  ## Examples
+
+      iex> list_companies_for_user(user)
+      [%Company{}, ...]
+
+  """
+  def list_companies_for_user(%User{} = user) do
+    preloaded_user = Repo.preload(user, :roles)
+    roles = Map.get(preloaded_user, :roles, [])
+    company_ids = Enum.map(roles, & &1.company_id)
+
+    if Enum.empty?(company_ids) do
+      []
+    else
+      Company
+      |> where([c], c.id in ^company_ids)
+      |> Repo.all()
+    end
+  end
+
+  @doc """
   Gets a single company.
 
   Returns `nil` if the Company does not exist.

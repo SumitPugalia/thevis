@@ -1,0 +1,300 @@
+<Layouts.app flash={@flash} current_user={@current_user} page_title={@page_title}>
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+        <p class="mt-2 text-sm text-gray-600">
+          Overview of all companies, projects, and system activity
+        </p>
+      </div>
+    </div>
+    
+<!-- Stats Overview -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Companies</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900">{@stats.total_companies}</p>
+          </div>
+          <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+            <.icon name="hero-building-office" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Projects</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900">{@stats.total_projects}</p>
+          </div>
+          <div class="p-3 rounded-full bg-green-100 text-green-600">
+            <.icon name="hero-folder" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Active Projects</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900">{@stats.active_projects}</p>
+          </div>
+          <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+            <.icon name="hero-play-circle" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Scans</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900">{@stats.total_scans}</p>
+          </div>
+          <div class="p-3 rounded-full bg-indigo-100 text-indigo-600">
+            <.icon name="hero-magnifying-glass" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Completed Scans</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900">{@stats.completed_scans}</p>
+          </div>
+          <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+            <.icon name="hero-check-circle" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+    </div>
+    
+<!-- Companies Overview -->
+    <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-900">All Companies</h2>
+        <.link
+          navigate={~p"/admin/companies"}
+          class="text-sm font-medium text-blue-600 hover:text-blue-900"
+        >
+          View All →
+        </.link>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Company Name
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Industry
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Type
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Projects
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr :for={company <- Enum.take(@companies, 10)} class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{company.name}</div>
+                <div class="text-sm text-gray-500">{company.domain}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {company.industry || "-"}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class={[
+                  "px-2 py-1 text-xs font-semibold rounded-full",
+                  if(company.company_type == :product_based,
+                    do: "bg-blue-100 text-blue-800",
+                    else: "bg-green-100 text-green-800"
+                  )
+                ]}>
+                  {String.replace(Atom.to_string(company.company_type), "_", " ")
+                  |> String.capitalize()}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {Projects.list_projects_by_company(company) |> length()}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <.link
+                  navigate={~p"/admin/companies/#{company.id}"}
+                  class="text-blue-600 hover:text-blue-900"
+                >
+                  View
+                </.link>
+              </td>
+            </tr>
+            <tr :if={Enum.empty?(@companies)}>
+              <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
+                No companies yet.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+<!-- Recent Projects -->
+    <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-900">Recent Projects</h2>
+        <.link
+          navigate={~p"/admin/projects"}
+          class="text-sm font-medium text-blue-600 hover:text-blue-900"
+        >
+          View All →
+        </.link>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Project Name
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Product
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Type
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr :for={project <- Enum.take(@projects, 10)} class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{project.name}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {if project.product, do: project.product.name, else: "-"}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                  {String.replace(Atom.to_string(project.project_type), "_", " ")
+                  |> String.capitalize()}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class={[
+                  "px-2 py-1 text-xs font-semibold rounded-full",
+                  if(project.status == :active,
+                    do: "bg-green-100 text-green-800",
+                    else: "bg-gray-100 text-gray-800"
+                  )
+                ]}>
+                  {String.capitalize(Atom.to_string(project.status))}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <.link
+                  navigate={~p"/admin/projects/#{project.id}"}
+                  class="text-blue-600 hover:text-blue-900"
+                >
+                  View
+                </.link>
+              </td>
+            </tr>
+            <tr :if={Enum.empty?(@projects)}>
+              <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
+                No projects yet.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+<!-- Recent Scans -->
+    <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900">Recent Scans</h2>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Scan Type
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Project
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Started At
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr :for={scan <- @recent_scans} class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class={[
+                  "px-2 py-1 text-xs font-semibold rounded-full",
+                  scan_type_badge(scan.scan_type)
+                ]}>
+                  {String.replace(Atom.to_string(scan.scan_type), "_", " ") |> String.capitalize()}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {if scan.project, do: scan.project.name, else: "-"}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class={[
+                  "px-2 py-1 text-xs font-semibold rounded-full",
+                  status_badge(scan.status)
+                ]}>
+                  {String.capitalize(Atom.to_string(scan.status))}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {if scan.started_at,
+                  do: Calendar.strftime(scan.started_at, "%Y-%m-%d %H:%M:%S"),
+                  else: "-"}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <.link
+                  navigate={~p"/admin/projects/#{scan.project_id}/scans/#{scan.id}"}
+                  class="text-blue-600 hover:text-blue-900"
+                >
+                  View
+                </.link>
+              </td>
+            </tr>
+            <tr :if={Enum.empty?(@recent_scans)}>
+              <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
+                No scans yet.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</Layouts.app>

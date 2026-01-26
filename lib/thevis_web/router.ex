@@ -29,6 +29,10 @@ defmodule ThevisWeb.Router do
     plug ThevisWeb.Plugs.RequireAuthenticatedUser
   end
 
+  pipeline :require_admin do
+    plug ThevisWeb.Plugs.RequireAdmin
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -67,6 +71,33 @@ defmodule ThevisWeb.Router do
     live "/products/:id/edit", ProductLive.Index, :edit
 
     # Project management
+    live "/projects", ProjectLive.Index, :index
+    live "/projects/new", ProjectLive.Index, :new
+    live "/projects/:id", ProjectLive.Show, :show
+    live "/projects/:id/edit", ProjectLive.Index, :edit
+    live "/projects/:id/scans", ScanLive.Index, :index
+    live "/projects/:id/scans/:scan_run_id", ScanLive.Show, :show
+  end
+
+  # Admin routes (consultant/admin only)
+  scope "/admin", ThevisWeb do
+    pipe_through [:browser, :require_authenticated_user, :require_admin]
+
+    live "/dashboard", AdminDashboardLive, :index
+
+    # Company management (admin view)
+    live "/companies", CompanyLive.Index, :index
+    live "/companies/new", CompanyLive.Index, :new
+    live "/companies/:id", CompanyLive.Show, :show
+    live "/companies/:id/edit", CompanyLive.Index, :edit
+
+    # Product management (admin view)
+    live "/products", ProductLive.Index, :index
+    live "/products/new", ProductLive.Index, :new
+    live "/products/:id", ProductLive.Show, :show
+    live "/products/:id/edit", ProductLive.Index, :edit
+
+    # Project management (admin view)
     live "/projects", ProjectLive.Index, :index
     live "/projects/new", ProjectLive.Index, :new
     live "/projects/:id", ProjectLive.Show, :show

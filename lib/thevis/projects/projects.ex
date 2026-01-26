@@ -50,6 +50,22 @@ defmodule Thevis.Projects do
   end
 
   @doc """
+  Returns all projects across all companies (admin view).
+
+  ## Examples
+
+      iex> list_all_projects()
+      [%Project{}, ...]
+
+  """
+  def list_all_projects do
+    Project
+    |> preload(:product)
+    |> order_by([p], desc: p.inserted_at)
+    |> Repo.all()
+  end
+
+  @doc """
   Gets a single project.
 
   Returns `nil` if the Project does not exist.

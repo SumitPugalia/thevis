@@ -3,10 +3,14 @@
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-3xl font-bold text-gray-900">Companies</h1>
-        <p class="mt-2 text-sm text-gray-600">Manage your client companies</p>
+        <p class="mt-2 text-sm text-gray-600">
+          {if assigns[:is_admin_route], do: "Manage all client companies", else: "Your companies"}
+        </p>
       </div>
       <.link
-        navigate={~p"/companies/new"}
+        navigate={
+          if assigns[:is_admin_route], do: ~p"/admin/companies/new", else: ~p"/companies/new"
+        }
         class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
       >
         <.icon name="hero-plus" class="w-5 h-5" /> New Company
@@ -55,13 +59,21 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center gap-2">
                   <.link
-                    navigate={~p"/companies/#{company.id}"}
+                    navigate={
+                      if assigns[:is_admin_route],
+                        do: ~p"/admin/companies/#{company.id}",
+                        else: ~p"/companies/#{company.id}"
+                    }
                     class="text-blue-600 hover:text-blue-900"
                   >
                     View
                   </.link>
                   <.link
-                    navigate={~p"/companies/#{company.id}/edit"}
+                    navigate={
+                      if assigns[:is_admin_route],
+                        do: ~p"/admin/companies/#{company.id}/edit",
+                        else: ~p"/companies/#{company.id}/edit"
+                    }
                     class="text-gray-600 hover:text-gray-900"
                   >
                     Edit

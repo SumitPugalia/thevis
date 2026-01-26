@@ -20,26 +20,45 @@ defmodule ThevisWeb.ProjectLive.Index do
   end
 
   @impl true
-  def handle_params(params, _url, socket) do
+  def handle_params(params, url, socket) do
     live_action = socket.assigns.live_action
-    socket = apply_action(socket, live_action, params)
+    socket = apply_action(socket, live_action, params, url)
     {:noreply, assign(socket, :live_action, live_action)}
   end
 
-  defp apply_action(socket, :index, _params) do
-    projects = load_all_projects()
+  defp apply_action(socket, :index, _params, url) do
+    current_user = socket.assigns[:current_user]
+    is_admin_route = String.starts_with?(url, "/admin")
+
+    projects =
+      if is_admin_route || (current_user && current_user.role == :consultant) do
+        # Admin route or consultant: show all projects
+        Projects.list_all_projects()
+      else
+        # Client route: show only user's projects
+        load_user_projects(current_user)
+      end
 
     socket
     |> assign(:page_title, "Projects")
     |> assign(:project, nil)
-    |> assign(:current_user, socket.assigns[:current_user])
+    |> assign(:current_user, current_user)
     |> assign(:live_action, :index)
+    |> assign(:is_admin_route, is_admin_route)
     |> assign(:projects_count, length(projects))
     |> stream(:projects, projects, reset: true)
   end
 
-  defp apply_action(socket, :new, _params) do
-    companies = Accounts.list_companies()
+  defp apply_action(socket, :new, _params, url) do
+    current_user = socket.assigns[:current_user]
+    is_admin_route = String.starts_with?(url, "/admin")
+
+    companies =
+      if is_admin_route || (current_user && current_user.role == :consultant) do
+        Accounts.list_companies()
+      else
+        Accounts.list_companies_for_user(current_user)
+      end
 
     products =
       Enum.flat_map(companies, fn company ->
@@ -56,30 +75,49 @@ defmodule ThevisWeb.ProjectLive.Index do
     socket
     |> assign(:page_title, "New Project")
     |> assign(:project, %Project{})
-    |> assign(:current_user, socket.assigns[:current_user])
+    |> assign(:current_user, current_user)
     |> assign(:live_action, :new)
+    |> assign(:is_admin_route, is_admin_route)
     |> assign(:companies, companies)
     |> assign(:products, products)
     |> assign(:form, to_form(Project.changeset(%Project{}, initial_attrs), as: "project"))
   end
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    project = Projects.get_project!(id)
-    companies = Accounts.list_companies()
+  defp apply_action(socket, :edit, %{"id" => id}, url) do
+    is_admin_route = String.starts_with?(url, "/admin")
+    current_user = socket.assigns[:current_user]
+
+    companies =
+      if is_admin_route || (current_user && current_user.role == :consultant) do
+        Accounts.list_companies()
+      else
+        Accounts.list_companies_for_user(current_user)
+      end
+
+    products =
+      Enum.flat_map(companies, fn company ->
+        if company.company_type == :product_based do
+          Products.list_products(company)
+        else
+          []
+        end
+      end)
 
     socket
     |> assign(:page_title, "Edit Project")
-    |> assign(:project, project)
-    |> assign(:current_user, socket.assigns[:current_user])
+    |> assign(:project, Projects.get_project!(id))
+    |> assign(:current_user, current_user)
     |> assign(:live_action, :edit)
+    |> assign(:is_admin_route, is_admin_route)
     |> assign(:companies, companies)
-    |> assign(:form, to_form(Project.changeset(project, %{}), as: "project"))
+    |> assign(:products, products)
+    |> assign(:form, to_form(Project.changeset(Projects.get_project!(id), %{}), as: "project"))
   end
 
-  defp load_all_projects do
-    companies = Accounts.list_companies()
+  defp load_user_projects(user) do
+    user_companies = Accounts.list_companies_for_user(user)
 
-    Enum.flat_map(companies, fn company ->
+    Enum.flat_map(user_companies, fn company ->
       Projects.list_projects_by_company(company)
     end)
   end
