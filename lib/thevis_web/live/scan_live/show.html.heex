@@ -127,5 +127,116 @@
         <% end %>
       </div>
     </div>
+    
+<!-- Recall Results -->
+    <%= if @scan_run.scan_type == :recall do %>
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900">Recall Test Results</h2>
+        </div>
+
+        <div class="p-6">
+          <%= if Enum.empty?(@recall_results) do %>
+            <div class="text-center py-12">
+              <p class="text-gray-500">No recall results available for this scan.</p>
+            </div>
+          <% else %>
+            <% recall_percentage = calculate_recall_percentage(@recall_results) %>
+            <% mention_rank = calculate_mention_rank(@recall_results) %>
+            
+<!-- Summary Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-indigo-600">Recall Percentage</p>
+                    <p class="text-3xl font-bold text-indigo-900 mt-1">
+                      {Float.round(recall_percentage, 1)}%
+                    </p>
+                  </div>
+                  <div class="p-3 rounded-full bg-indigo-100 text-indigo-600">
+                    <.icon name="hero-chart-bar" class="h-6 w-6" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-purple-600">Average Mention Rank</p>
+                    <p class="text-3xl font-bold text-purple-900 mt-1">
+                      {if mention_rank, do: Float.round(mention_rank, 1), else: "N/A"}
+                    </p>
+                  </div>
+                  <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <.icon name="hero-trophy" class="h-6 w-6" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+<!-- Detailed Results Table -->
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Prompt
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Mentioned
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Rank
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Response
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr :for={result <- @recall_results} class="hover:bg-gray-50">
+                    <td class="px-4 py-4 whitespace-nowrap">
+                      <span class="text-sm font-medium text-gray-900">
+                        {String.replace(result.prompt_category, "_", " ") |> String.capitalize()}
+                      </span>
+                    </td>
+                    <td class="px-4 py-4">
+                      <p class="text-sm text-gray-600 max-w-md">{result.prompt_text}</p>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap">
+                      <span class={[
+                        "px-2 py-1 text-xs font-semibold rounded-full",
+                        if(result.mentioned,
+                          do: "bg-green-100 text-green-800",
+                          else: "bg-red-100 text-red-800"
+                        )
+                      ]}>
+                        {if result.mentioned, do: "Yes", else: "No"}
+                      </span>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap">
+                      <span class="text-sm text-gray-900">
+                        {if result.mention_rank, do: "#{result.mention_rank}", else: "-"}
+                      </span>
+                    </td>
+                    <td class="px-4 py-4">
+                      <p class="text-sm text-gray-600 max-w-md line-clamp-2">
+                        {String.slice(result.response_text || "", 0, 100)}
+                        {if result.response_text && String.length(result.response_text) > 100,
+                          do: "..."}
+                      </p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   </div>
 </Layouts.app>

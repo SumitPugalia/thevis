@@ -180,4 +180,20 @@ defmodule Thevis.Factory do
       prompt_template: "product_probe"
     }
   end
+
+  def recall_result_factory do
+    product = insert(:product)
+    scan_run = insert(:scan_run, scan_type: :recall)
+
+    %Thevis.Geo.RecallResult{
+      scan_run: scan_run,
+      product: product,
+      prompt_category: "product_search",
+      prompt_text: "What are the best skincare products?",
+      mentioned: true,
+      mention_rank: 1,
+      response_text: "Some great products include Test Product.",
+      raw_response: %{}
+    }
+  end
 end

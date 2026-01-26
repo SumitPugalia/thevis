@@ -30,7 +30,7 @@ config :swoosh, :api_client, false
 config :logger, level: :warning
 
 # Configure AI adapter to use mock in tests
-config :thevis, Thevis.AI, adapter: Thevis.AI.MockAdaptering
+config :thevis, Thevis.AI, adapter: Thevis.AI.MockAdapter
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime

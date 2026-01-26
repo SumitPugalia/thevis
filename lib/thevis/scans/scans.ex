@@ -8,6 +8,7 @@ defmodule Thevis.Scans do
 
   alias Thevis.Geo
   alias Thevis.Geo.EntityProbe
+  alias Thevis.Geo.RecallTest
   alias Thevis.Projects
   alias Thevis.Projects.Project
   alias Thevis.Scans.ScanResult
@@ -291,8 +292,68 @@ defmodule Thevis.Scans do
     end
   end
 
+  def execute_scan(%ScanRun{scan_type: :recall} = scan_run) do
+    {:ok, scan_run} = mark_scan_started(scan_run)
+
+    project =
+      scan_run.project_id
+      |> Projects.get_project!()
+      |> Thevis.Repo.preload(:product)
+
+    if is_nil(project.product) do
+      mark_scan_failed(scan_run)
+      {:error, :product_not_found}
+    else
+      execute_recall_tests(scan_run, project.product)
+    end
+  end
+
   def execute_scan(%ScanRun{} = scan_run) do
     {:error, {:unsupported_scan_type, scan_run.scan_type}}
+  end
+
+  defp execute_recall_tests(scan_run, product) do
+    case RecallTest.test_recall(product) do
+      {:ok, results} ->
+        # Check if all results are errors
+        all_errors? = Enum.all?(results, &match?({:error, _}, &1))
+
+        if all_errors? do
+          # If all tests failed, extract the first error reason
+          {:error, _reason} = List.first(results)
+          mark_scan_failed(scan_run)
+          {:error, :all_tests_failed}
+        else
+          store_recall_results(scan_run, product, results)
+          mark_scan_completed(scan_run)
+          {:ok, results}
+        end
+
+      {:error, reason} ->
+        mark_scan_failed(scan_run)
+        {:error, reason}
+    end
+  end
+
+  defp store_recall_results(scan_run, product, results) do
+    Enum.each(results, fn
+      {:ok, result} ->
+        attrs = %{
+          prompt_category: result.category,
+          prompt_text: result.prompt,
+          mentioned: result.mentioned,
+          mention_rank: result.mention_rank,
+          response_text: result.response_text,
+          raw_response: result.raw_response,
+          product_id: product.id
+        }
+
+        Geo.create_recall_result(scan_run, attrs)
+
+      {:error, _error} ->
+        # Skip error results for now
+        :ok
+    end)
   end
 
   defp probe_and_store_snapshot(scan_run, product) do

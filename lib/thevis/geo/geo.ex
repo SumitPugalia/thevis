@@ -7,6 +7,7 @@ defmodule Thevis.Geo do
   alias Thevis.Repo
 
   alias Thevis.Geo.EntitySnapshot
+  alias Thevis.Geo.RecallResult
   alias Thevis.Scans.ScanRun
 
   ## Entity Snapshots
@@ -83,5 +84,39 @@ defmodule Thevis.Geo do
     |> order_by([e], desc: e.inserted_at)
     |> limit(1)
     |> Repo.one()
+  end
+
+  ## Recall Results
+
+  @doc """
+  Returns the list of recall results for a scan run.
+  """
+  def list_recall_results(%ScanRun{} = scan_run) do
+    RecallResult
+    |> where([r], r.scan_run_id == ^scan_run.id)
+    |> order_by([r], desc: r.inserted_at)
+    |> Repo.all()
+  end
+
+  @doc """
+  Creates a recall result.
+  """
+  def create_recall_result(%ScanRun{} = scan_run, attrs \\ %{}) do
+    attrs_string_keys = for {k, v} <- attrs, into: %{}, do: {to_string(k), v}
+    attrs_with_scan_run = Map.put(attrs_string_keys, "scan_run_id", scan_run.id)
+
+    %RecallResult{}
+    |> RecallResult.changeset(attrs_with_scan_run)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Gets recall results for a product from a scan run.
+  """
+  def get_recall_results_for_product(%ScanRun{} = scan_run, product_id) do
+    RecallResult
+    |> where([r], r.scan_run_id == ^scan_run.id and r.product_id == ^product_id)
+    |> order_by([r], desc: r.inserted_at)
+    |> Repo.all()
   end
 end

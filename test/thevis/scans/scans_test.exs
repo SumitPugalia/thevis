@@ -1,9 +1,13 @@
 defmodule Thevis.ScansTest do
   use Thevis.DataCase
+  import Mox
 
   alias Thevis.Scans
   alias Thevis.Scans.ScanResult
   alias Thevis.Scans.ScanRun
+
+  # Make sure mocks are verified when the test exits
+  setup :verify_on_exit!
 
   describe "scan_runs" do
     @valid_attrs %{
@@ -165,6 +169,67 @@ defmodule Thevis.ScansTest do
     test "get_latest_results/1 returns empty list when no scan runs exist" do
       project = insert(:product_project)
       assert Scans.get_latest_results(project) == []
+    end
+  end
+
+  describe "recall scan execution" do
+    setup do
+      project = insert(:product_project)
+      {:ok, project: project}
+    end
+
+    test "execute_scan/1 with recall type executes recall tests", %{project: project} do
+      {:ok, scan_run} =
+        Scans.create_scan_run(project, %{
+          scan_type: :recall,
+          status: :pending
+        })
+
+      # Mock AI adapter for recall tests
+      Thevis.AI.MockAdapter
+      |> expect(:chat_completion, 6, fn _messages, _opts ->
+        {:ok,
+         %{
+           "choices" => [
+             %{
+               "message" => %{
+                 "content" => "#{project.product.name} is a great product."
+               }
+             }
+           ]
+         }}
+      end)
+
+      assert {:ok, _results} = Scans.execute_scan(scan_run)
+
+      # Verify scan is completed
+      updated_scan_run = Scans.get_scan_run!(scan_run.id)
+      assert updated_scan_run.status == :completed
+      assert updated_scan_run.completed_at != nil
+
+      # Verify recall results were stored
+      recall_results = Thevis.Geo.list_recall_results(scan_run)
+      assert length(recall_results) > 0
+    end
+
+    test "execute_scan/1 with recall type handles errors", %{project: project} do
+      {:ok, scan_run} =
+        Scans.create_scan_run(project, %{
+          scan_type: :recall,
+          status: :pending
+        })
+
+      # Mock AI adapter to return error (test_recall generates 6 prompts by default)
+      Thevis.AI.MockAdapter
+      |> expect(:chat_completion, 6, fn _messages, _opts ->
+        {:error, :timeout}
+      end)
+
+      assert {:error, :all_tests_failed} = Scans.execute_scan(scan_run)
+
+      # Verify scan is marked as failed
+      updated_scan_run = Scans.get_scan_run!(scan_run.id)
+      assert updated_scan_run.status == :failed
     end
   end
 end
