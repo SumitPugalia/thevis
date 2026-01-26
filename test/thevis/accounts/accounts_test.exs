@@ -83,11 +83,10 @@ defmodule Thevis.AccountsTest do
     test "list_users/1 with role filter returns filtered users" do
       {:ok, _client} = Accounts.create_user(@valid_attrs)
 
-      {:ok, _consultant} =
-        consultant_attrs =
+      consultant_attrs =
         Map.merge(@valid_attrs, %{email: "consultant@example.com", role: :consultant})
 
-      Accounts.create_user(consultant_attrs)
+      {:ok, _consultant} = Accounts.create_user(consultant_attrs)
 
       clients = Accounts.list_users(role: :client)
       assert Enum.all?(clients, &(&1.role == :client))
@@ -147,10 +146,9 @@ defmodule Thevis.AccountsTest do
     test "list_companies/0 returns all companies" do
       {:ok, company1} = Accounts.create_company(@valid_attrs)
 
-      {:ok, _company2} =
-        company2_attrs = Map.merge(@valid_attrs, %{name: "Company 2", domain: "company2.com"})
+      company2_attrs = Map.merge(@valid_attrs, %{name: "Company 2", domain: "company2.com"})
 
-      Accounts.create_company(company2_attrs)
+      {:ok, _company2} = Accounts.create_company(company2_attrs)
 
       companies = Accounts.list_companies()
       assert length(companies) >= 2
@@ -206,13 +204,17 @@ defmodule Thevis.AccountsTest do
           company_type: :product_based
         })
 
-      {:ok, company} =
+      {:ok, company_with_comp1} =
         Accounts.add_competitor(company, %{name: "Comp1", domain: "comp1.com", industry: "Tech"})
 
-      {:ok, company2} =
-        Accounts.add_competitor(company, %{name: "Comp2", domain: "comp2.com", industry: "Tech"})
+      {:ok, company_with_comp2} =
+        Accounts.add_competitor(company_with_comp1, %{
+          name: "Comp2",
+          domain: "comp2.com",
+          industry: "Tech"
+        })
 
-      competitors = Accounts.list_competitors(company)
+      competitors = Accounts.list_competitors(company_with_comp2)
       assert length(competitors) == 2
     end
 
@@ -225,16 +227,16 @@ defmodule Thevis.AccountsTest do
           company_type: :product_based
         })
 
-      {:ok, updated_company1} =
+      {:ok, company_with_competitor} =
         Accounts.add_competitor(company, %{
           name: "Competitor",
           domain: "comp.com",
           industry: "Tech"
         })
 
-      assert length(Accounts.list_competitors(company)) == 1
+      assert length(Accounts.list_competitors(company_with_competitor)) == 1
 
-      assert {:ok, updated_company} = Accounts.remove_competitor(company, 0)
+      assert {:ok, updated_company} = Accounts.remove_competitor(company_with_competitor, 0)
       competitors = Accounts.list_competitors(updated_company)
       assert competitors == []
     end
@@ -260,7 +262,7 @@ defmodule Thevis.AccountsTest do
           company_type: :product_based
         })
 
-      {:ok, updated_company1} =
+      {:ok, company_with_competitor} =
         Accounts.add_competitor(company, %{
           name: "Competitor",
           domain: "comp.com",
@@ -268,7 +270,9 @@ defmodule Thevis.AccountsTest do
         })
 
       assert {:ok, updated_company} =
-               Accounts.update_competitor(company, 0, %{"name" => "Updated Competitor"})
+               Accounts.update_competitor(company_with_competitor, 0, %{
+                 "name" => "Updated Competitor"
+               })
 
       competitors = Accounts.list_competitors(updated_company)
       assert Enum.at(competitors, 0)["name"] == "Updated Competitor"

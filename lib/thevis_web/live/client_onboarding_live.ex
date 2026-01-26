@@ -378,10 +378,8 @@ defmodule ThevisWeb.ClientOnboardingLive do
 
     merged_params = Map.merge(product_params, %{"company_id" => company.id})
 
-    changeset =
-      %Products.Product{}
-      |> Products.Product.changeset(merged_params)
-      |> Map.put(:action, :validate)
+    base_changeset = Products.Product.changeset(%Products.Product{}, merged_params)
+    changeset = Map.put(base_changeset, :action, :validate)
 
     {:noreply, assign(socket, product_form: to_form(changeset, as: "product"))}
   end
@@ -392,9 +390,7 @@ defmodule ThevisWeb.ClientOnboardingLive do
 
     merged_params = Map.merge(product_params, %{"company_id" => company.id})
 
-    changeset =
-      %Products.Product{}
-      |> Products.Product.changeset(merged_params)
+    changeset = Products.Product.changeset(%Products.Product{}, merged_params)
 
     if changeset.valid? do
       product_data = %{
