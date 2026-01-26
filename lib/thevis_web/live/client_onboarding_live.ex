@@ -126,9 +126,8 @@ defmodule ThevisWeb.ClientOnboardingLive do
                 label="Company Description"
                 placeholder="Brief description of your company"
               />
-              <.input
+              <.dropdown
                 field={@form[:company_type]}
-                type="select"
                 label="Company Type"
                 required
                 options={[{"Product-Based", "product_based"}, {"Service-Based", "service_based"}]}
@@ -197,9 +196,8 @@ defmodule ThevisWeb.ClientOnboardingLive do
                           required
                           placeholder="e.g., Glow Serum"
                         />
-                        <.input
+                        <.dropdown
                           field={@product_form[:product_type]}
-                          type="select"
                           label="Product Type"
                           required
                           options={[

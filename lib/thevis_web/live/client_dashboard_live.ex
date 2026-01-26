@@ -213,9 +213,8 @@ defmodule ThevisWeb.ClientDashboardLive do
                       required
                       placeholder="e.g., Glow Serum"
                     />
-                    <.input
+                    <.dropdown
                       field={@product_form[:product_type]}
-                      type="select"
                       label="Product Type"
                       required
                       options={[
@@ -282,9 +281,8 @@ defmodule ThevisWeb.ClientDashboardLive do
                       label="Category"
                       placeholder="e.g., Legal Services, Consulting"
                     />
-                    <.input
+                    <.dropdown
                       field={@service_form[:service_type]}
-                      type="select"
                       label="Service Type"
                       required
                       options={[

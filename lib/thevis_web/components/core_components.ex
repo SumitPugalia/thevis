@@ -127,7 +127,7 @@ defmodule ThevisWeb.CoreComponents do
 
   This function accepts all HTML input types, considering that:
 
-    * You may also set `type="select"` to render a `<select>` tag
+    * For dropdowns, use the `<.dropdown>` component instead
 
     * `type="checkbox"` is used exclusively to render boolean values
 
@@ -168,13 +168,8 @@ defmodule ThevisWeb.CoreComponents do
                 multiple pattern placeholder readonly required rows size step)
 
   def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
-    errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
-
     assigns
-    |> assign(field: nil, id: assigns.id || field.id)
-    |> assign(:errors, Enum.map(errors, &translate_error(&1)))
-    |> assign_new(:name, fn -> if assigns.multiple, do: field.name <> "[]", else: field.name end)
-    |> assign_new(:value, fn -> field.value end)
+    |> process_form_field(field)
     |> input()
   end
 
@@ -199,27 +194,6 @@ defmodule ThevisWeb.CoreComponents do
             {@rest}
           />{@label}
         </span>
-      </label>
-      <.error :for={msg <- @errors}>{msg}</.error>
-    </div>
-    """
-  end
-
-  def input(%{type: "select"} = assigns) do
-    ~H"""
-    <div class="fieldset mb-2">
-      <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
-        <select
-          id={@id}
-          name={@name}
-          class={[@class || "w-full select", @errors != [] && (@error_class || "select-error")]}
-          multiple={@multiple}
-          {@rest}
-        >
-          <option :if={@prompt} value="">{@prompt}</option>
-          {Phoenix.HTML.Form.options_for_select(@options, @value)}
-        </select>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
@@ -419,6 +393,93 @@ defmodule ThevisWeb.CoreComponents do
     """
   end
 
+  @doc """
+  Renders a custom dropdown select with brand theme styling.
+
+  This component provides a styled dropdown that follows the thevis.ai brand theme
+  with blue hover effects and proper accessibility.
+
+  ## Examples
+
+      <.dropdown
+        field={@form[:company_type]}
+        label="Company Type"
+        options={[{"Product-Based", "product_based"}, {"Service-Based", "service_based"}]}
+      />
+
+      <.dropdown
+        field={@form[:product_type]}
+        label="Product Type"
+        options={[
+          {"Cosmetic", "cosmetic"},
+          {"Edible", "edible"},
+          {"Other", "other"}
+        ]}
+        prompt="Select a type"
+      />
+  """
+  attr :id, :any, default: nil
+  attr :name, :any
+  attr :label, :string, default: nil
+  attr :value, :any
+
+  attr :field, Phoenix.HTML.FormField,
+    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+
+  attr :errors, :list, default: []
+  attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
+
+  attr :options, :list,
+    required: true,
+    doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
+
+  attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
+  attr :class, :string, default: nil, doc: "additional classes to apply"
+  attr :rest, :global, include: ~w(disabled form required autocomplete)
+
+  def dropdown(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    assigns
+    |> process_form_field(field)
+    |> dropdown()
+  end
+
+  def dropdown(assigns) do
+    ~H"""
+    <div class="mb-4">
+      <label :if={@label} for={@id} class="block text-sm font-medium text-gray-700 mb-1.5">
+        {@label}
+      </label>
+      <div class="relative">
+        <select
+          id={@id}
+          name={@name}
+          class={[
+            "w-full px-3 py-2.5 text-base text-gray-700 bg-white border border-gray-300 rounded-md",
+            "appearance-none cursor-pointer",
+            "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+            "hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-200",
+            "disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500",
+            "disabled:hover:border-gray-300 disabled:hover:bg-gray-100",
+            @errors != [] && "border-red-500 focus:ring-red-500 focus:border-red-500",
+            @class
+          ]}
+          multiple={@multiple}
+          {@rest}
+        >
+          <option :if={@prompt} value="" disabled={@prompt != nil}>
+            {@prompt}
+          </option>
+          {Phoenix.HTML.Form.options_for_select(@options, @value)}
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+          <.icon name="hero-chevron-down" class="h-5 w-5 text-gray-400" />
+        </div>
+      </div>
+      <.error :for={msg <- @errors}>{msg}</.error>
+    </div>
+    """
+  end
+
   ## JS Commands
 
   def show(js \\ %JS{}, selector) do
@@ -440,6 +501,17 @@ defmodule ThevisWeb.CoreComponents do
         {"transition-all ease-in duration-200", "opacity-100 translate-y-0 sm:scale-100",
          "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"}
     )
+  end
+
+  # Helper function to process form field assigns (extracted to avoid duplication)
+  defp process_form_field(assigns, field) do
+    errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
+
+    assigns
+    |> assign(field: nil, id: assigns.id || field.id)
+    |> assign(:errors, Enum.map(errors, &translate_error(&1)))
+    |> assign_new(:name, fn -> if assigns.multiple, do: field.name <> "[]", else: field.name end)
+    |> assign_new(:value, fn -> field.value end)
   end
 
   @doc """
