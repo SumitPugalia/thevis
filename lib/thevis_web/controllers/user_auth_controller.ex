@@ -43,7 +43,7 @@ defmodule ThevisWeb.UserAuthController do
     end
   end
 
-  defp get_redirect_path(%{role: :consultant}), do: "/admin/companies"
+  defp get_redirect_path(%{role: :consultant}), do: "/companies"
   defp get_redirect_path(%{role: :client}), do: "/dashboard"
   defp get_redirect_path(_), do: "/dashboard"
 

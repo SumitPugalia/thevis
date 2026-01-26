@@ -223,7 +223,7 @@ defmodule ThevisWeb.ClientDashboardLive do
                     </h4>
                     <%= if company.company_type == :product_based && company.products_count > 0 do %>
                       <.link
-                        navigate={~p"/admin/projects/new"}
+                        navigate={~p"/projects/new"}
                         class="text-xs text-blue-600 hover:text-blue-900 font-medium"
                       >
                         + Create Project
@@ -318,7 +318,7 @@ defmodule ThevisWeb.ClientDashboardLive do
                       </p>
                       <%= if company.company_type == :product_based && company.products_count > 0 do %>
                         <.link
-                          navigate={~p"/admin/projects/new"}
+                          navigate={~p"/projects/new"}
                           class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-900 font-medium mx-auto"
                         >
                           <.icon name="hero-plus-circle" class="w-4 h-4" /> Create Your First Project

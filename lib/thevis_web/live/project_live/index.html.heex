@@ -6,7 +6,7 @@
           <h1 class="text-3xl font-bold text-gray-900">{@page_title}</h1>
         </div>
         <.link
-          navigate={~p"/admin/projects"}
+          navigate={~p"/projects"}
           class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
         >
           <.icon name="hero-arrow-left" class="w-5 h-5" /> Back
@@ -124,7 +124,7 @@
           <p class="mt-2 text-sm text-gray-600">Manage optimization projects</p>
         </div>
         <.link
-          navigate={~p"/admin/projects/new"}
+          navigate={~p"/projects/new"}
           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
         >
           <.icon name="hero-plus" class="w-5 h-5" /> New Project
@@ -186,13 +186,13 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center gap-2">
                     <.link
-                      navigate={~p"/admin/projects/#{project.id}"}
+                      navigate={~p"/projects/#{project.id}"}
                       class="text-blue-600 hover:text-blue-900"
                     >
                       View
                     </.link>
                     <.link
-                      navigate={~p"/admin/projects/#{project.id}/edit"}
+                      navigate={~p"/projects/#{project.id}/edit"}
                       class="text-gray-600 hover:text-gray-900"
                     >
                       Edit

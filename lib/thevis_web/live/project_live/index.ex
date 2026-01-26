@@ -111,7 +111,7 @@ defmodule ThevisWeb.ProjectLive.Index do
             {:noreply,
              socket
              |> put_flash(:info, "Project created successfully!")
-             |> push_navigate(to: ~p"/admin/projects")}
+             |> push_navigate(to: ~p"/projects")}
 
           {:error, %Ecto.Changeset{} = changeset} ->
             {:noreply, assign(socket, form: to_form(changeset, as: "project"))}
@@ -132,7 +132,7 @@ defmodule ThevisWeb.ProjectLive.Index do
 
   @impl true
   def handle_event("cancel", _params, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/admin/projects")}
+    {:noreply, push_navigate(socket, to: ~p"/projects")}
   end
 
   @impl true

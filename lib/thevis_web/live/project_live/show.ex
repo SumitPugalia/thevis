@@ -38,13 +38,13 @@ defmodule ThevisWeb.ProjectLive.Show do
           </div>
           <div class="flex gap-3">
             <.link
-              navigate={~p"/admin/projects/#{@project.id}/scans"}
+              navigate={~p"/projects/#{@project.id}/scans"}
               class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
             >
               <.icon name="hero-magnifying-glass" class="w-5 h-5" /> View Scans
             </.link>
             <.link
-              navigate={~p"/admin/projects/#{@project.id}/edit"}
+              navigate={~p"/projects/#{@project.id}/edit"}
               class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               <.icon name="hero-pencil" class="w-5 h-5" /> Edit

@@ -39,7 +39,7 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
         })
 
       # Follow redirect to get proper session
-      assert redirected_to(conn) == ~p"/admin/companies"
+      assert redirected_to(conn) == ~p"/companies"
 
       %{conn: conn, consultant: consultant, company: company, product: product}
     end
@@ -57,7 +57,7 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
         })
 
       # Test UI - navigate to projects index
-      {:ok, index_live, html} = live(conn, ~p"/admin/projects")
+      {:ok, index_live, html} = live(conn, ~p"/projects")
 
       # Verify UI shows the project
       assert has_element?(index_live, "#projects")
@@ -69,7 +69,7 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
 
     test "saves new project from UI form", %{conn: conn, product: product} do
       # Navigate to new project page
-      {:ok, new_live, html} = live(conn, ~p"/admin/projects/new")
+      {:ok, new_live, html} = live(conn, ~p"/projects/new")
 
       # Verify form is present
       assert has_element?(new_live, "#project-form")
@@ -92,7 +92,7 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
       |> render_submit()
 
       # Verify redirect to index
-      assert_redirect(new_live, ~p"/admin/projects")
+      assert_redirect(new_live, ~p"/projects")
 
       # Verify project was created in database (context validation)
       projects = Projects.list_projects_by_company(product.company)
@@ -108,12 +108,12 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
       assert created_project.product_id == product.id
 
       # Verify UI shows the new project
-      {:ok, _index_live, html} = live(conn, ~p"/admin/projects")
+      {:ok, _index_live, html} = live(conn, ~p"/projects")
       assert html =~ "UI Created Project"
     end
 
     test "validates form fields in real-time", %{conn: conn} do
-      {:ok, new_live, _html} = live(conn, ~p"/admin/projects/new")
+      {:ok, new_live, _html} = live(conn, ~p"/projects/new")
 
       # Try to submit form with missing required fields (name is required)
       invalid_params = %{
@@ -135,7 +135,7 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
     end
 
     test "validates product selection is required", %{conn: conn} do
-      {:ok, new_live, _html} = live(conn, ~p"/admin/projects/new")
+      {:ok, new_live, _html} = live(conn, ~p"/projects/new")
 
       # Submit form without selecting a product
       project_params = %{
@@ -158,7 +158,7 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
     end
 
     test "cancels form and redirects to index", %{conn: conn} do
-      {:ok, new_live, _html} = live(conn, ~p"/admin/projects/new")
+      {:ok, new_live, _html} = live(conn, ~p"/projects/new")
 
       # Click cancel button
       new_live
@@ -166,11 +166,11 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
       |> render_click()
 
       # Verify redirect
-      assert_redirect(new_live, ~p"/admin/projects")
+      assert_redirect(new_live, ~p"/projects")
     end
 
     test "shows empty state when no projects exist", %{conn: conn} do
-      {:ok, _index_live, html} = live(conn, ~p"/admin/projects")
+      {:ok, _index_live, html} = live(conn, ~p"/projects")
 
       # Verify empty state message
       assert html =~ "No projects yet"
@@ -206,7 +206,7 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
           "urgency_level" => "standard"
         })
 
-      {:ok, _index_live, html} = live(conn, ~p"/admin/projects")
+      {:ok, _index_live, html} = live(conn, ~p"/projects")
 
       # Verify badges are displayed
       assert html =~ "Launch Project"
@@ -234,7 +234,7 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
           "urgency_level" => "standard"
         })
 
-      {:ok, _index_live, html} = live(conn, ~p"/admin/projects")
+      {:ok, _index_live, html} = live(conn, ~p"/projects")
 
       # Verify status badges
       assert html =~ "Active"
@@ -242,7 +242,7 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
     end
 
     test "shows product dropdown in new form", %{conn: conn, product: product} do
-      {:ok, new_live, html} = live(conn, ~p"/admin/projects/new")
+      {:ok, new_live, html} = live(conn, ~p"/projects/new")
 
       # Verify product dropdown is present
       assert has_element?(new_live, "#project_product_id")
@@ -250,7 +250,7 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
     end
 
     test "handles product not found error", %{conn: conn} do
-      {:ok, _new_live, _html} = live(conn, ~p"/admin/projects/new")
+      {:ok, _new_live, _html} = live(conn, ~p"/projects/new")
 
       # Note: The form's select dropdown validates that only valid product IDs
       # can be submitted, so we can't test invalid IDs through the form.
@@ -270,26 +270,24 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
           "urgency_level" => "standard"
         })
 
-      {:ok, index_live, _html} = live(conn, ~p"/admin/projects")
+      {:ok, index_live, _html} = live(conn, ~p"/projects")
 
       # Click view link
       index_live
-      |> element("a[href='/admin/projects/#{project.id}']")
+      |> element("a[href='/projects/#{project.id}']")
       |> render_click()
 
       # Verify navigation
-      assert_redirect(index_live, ~p"/admin/projects/#{project.id}")
+      assert_redirect(index_live, ~p"/projects/#{project.id}")
     end
 
-    test "shows projects page when accessed", %{conn: _conn} do
-      # Note: Admin routes currently don't require authentication in router
-      # This test verifies the page is accessible
-      # In production, you would add :require_authenticated_user to the admin scope
-      unauthenticated_conn = Phoenix.ConnTest.build_conn()
+    test "requires authentication", %{conn: conn} do
+      # Routes now require authentication
+      unauthenticated_conn = delete_session(conn, "guardian_default_token")
 
-      # The page should still load (though it may show empty state)
-      {:ok, _index_live, html} = live(unauthenticated_conn, ~p"/admin/projects")
-      assert html =~ "Projects"
+      assert_raise Phoenix.LiveView.UnauthorizedError, fn ->
+        live(unauthenticated_conn, ~p"/projects")
+      end
     end
   end
 end

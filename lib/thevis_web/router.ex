@@ -54,26 +54,19 @@ defmodule ThevisWeb.Router do
     live "/dashboard", ClientDashboardLive, :index
     live "/onboarding", ClientOnboardingLive, :index
 
-    # Client-accessible scan routes
-    live "/projects/:id/scans", ScanLive.Index, :index
-    live "/projects/:id/scans/:scan_run_id", ScanLive.Show, :show
-  end
-
-  # Admin/Consultant routes (for now, no auth - will add later)
-  scope "/admin", ThevisWeb do
-    pipe_through :browser
-
-    live "/", CompanyLive.Index, :index
+    # Company management
     live "/companies", CompanyLive.Index, :index
     live "/companies/new", CompanyLive.Index, :new
     live "/companies/:id", CompanyLive.Show, :show
     live "/companies/:id/edit", CompanyLive.Index, :edit
 
+    # Product management
     live "/products", ProductLive.Index, :index
     live "/products/new", ProductLive.Index, :new
     live "/products/:id", ProductLive.Show, :show
     live "/products/:id/edit", ProductLive.Index, :edit
 
+    # Project management
     live "/projects", ProjectLive.Index, :index
     live "/projects/new", ProjectLive.Index, :new
     live "/projects/:id", ProjectLive.Show, :show

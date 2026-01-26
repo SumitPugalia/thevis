@@ -62,26 +62,25 @@ defmodule ThevisWeb.Layouts do
               </div>
               <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
                 <%= if @current_user do %>
-                  <%= if @current_user.role == :consultant do %>
-                    <.link
-                      navigate={~p"/admin/companies"}
-                      class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    >
-                      Companies
-                    </.link>
-                    <.link
-                      navigate={~p"/admin/products"}
-                      class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    >
-                      Products
-                    </.link>
-                    <.link
-                      navigate={~p"/admin/projects"}
-                      class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    >
-                      Projects
-                    </.link>
-                  <% else %>
+                  <.link
+                    navigate={~p"/companies"}
+                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    Companies
+                  </.link>
+                  <.link
+                    navigate={~p"/products"}
+                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    Products
+                  </.link>
+                  <.link
+                    navigate={~p"/projects"}
+                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    Projects
+                  </.link>
+                  <%= if @current_user.role != :consultant do %>
                     <.link
                       navigate={~p"/dashboard"}
                       class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"

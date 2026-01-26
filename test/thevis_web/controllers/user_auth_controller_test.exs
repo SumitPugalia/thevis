@@ -40,7 +40,7 @@ defmodule ThevisWeb.UserAuthControllerTest do
           "user" => %{"email" => "consultant@example.com", "password" => "password1234"}
         })
 
-      assert redirected_to(conn) == ~p"/admin/companies"
+      assert redirected_to(conn) == ~p"/companies"
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Welcome back!"
     end
 
