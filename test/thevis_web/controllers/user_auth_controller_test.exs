@@ -72,9 +72,9 @@ defmodule ThevisWeb.UserAuthControllerTest do
         })
 
       # Then log out
-      conn = delete(conn, ~p"/logout")
+      logout_conn = delete(conn, ~p"/logout")
 
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(logout_conn) == ~p"/"
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Logged out successfully"
     end
   end

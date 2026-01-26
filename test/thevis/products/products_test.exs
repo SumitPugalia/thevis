@@ -5,9 +5,10 @@ defmodule Thevis.ProductsTest do
 
   use Thevis.DataCase
 
-  alias Thevis.Products
-  alias Thevis.Products.{Product, CompetitorProduct}
   alias Thevis.Accounts
+  alias Thevis.Products
+  alias Thevis.Products.CompetitorProduct
+  alias Thevis.Products.Product
 
   describe "products" do
     setup do
@@ -218,7 +219,7 @@ defmodule Thevis.ProductsTest do
       assert {:ok, _} = Products.remove_competitor_product(product, competitor.id)
 
       competitors = Products.list_competitor_products(product)
-      assert length(competitors) == 0
+      assert competitors == []
     end
 
     test "remove_competitor_product/2 returns error for invalid competitor_id", %{

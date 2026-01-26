@@ -32,11 +32,11 @@ defmodule ThevisWeb.ClientDashboardLiveTest do
 
       # Follow redirect to dashboard
       assert redirected_to(conn) == ~p"/dashboard"
-      conn = get(conn, ~p"/dashboard")
+      dashboard_conn = get(conn, ~p"/dashboard")
 
       # Should render the dashboard
-      assert html_response(conn, 200) =~ "Dashboard"
-      assert html_response(conn, 200) =~ "Welcome back"
+      assert html_response(dashboard_conn, 200) =~ "Dashboard"
+      assert html_response(dashboard_conn, 200) =~ "Welcome back"
     end
 
     test "displays empty state when user has no companies", %{conn: conn} do

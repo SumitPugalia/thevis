@@ -83,12 +83,14 @@ defmodule Thevis.Accounts.User do
   A user changeset for changing the email.
   """
   def email_changeset(user, attrs) do
-    user
-    |> cast(attrs, [:email])
-    |> validate_email()
-    |> case do
-      %{changes: %{email: _}} = changeset -> changeset
-      %{changes: _} = changeset -> add_error(changeset, :email, "did not change")
+    changeset =
+      user
+      |> cast(attrs, [:email])
+      |> validate_email()
+
+    case changeset do
+      %{changes: %{email: _}} -> changeset
+      %{changes: _} -> add_error(changeset, :email, "did not change")
     end
   end
 
@@ -106,7 +108,7 @@ defmodule Thevis.Accounts.User do
   Confirms the account by setting `confirmed_at`.
   """
   def confirm_changeset(user) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    now = DateTime.truncate(DateTime.utc_now(), :second)
     change(user, confirmed_at: now)
   end
 

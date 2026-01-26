@@ -44,7 +44,8 @@ defmodule ThevisWeb.ClientOnboardingLiveTest do
       assert company.company_type == :product_based
 
       # Verify role was assigned
-      user = Accounts.get_user(user.id) |> Thevis.Repo.preload(:roles)
+      fetched_user = Accounts.get_user(user.id)
+      user = Thevis.Repo.preload(fetched_user, :roles)
       role = Enum.find(user.roles, &(&1.company_id == company.id))
       assert role.role_type == :owner
     end

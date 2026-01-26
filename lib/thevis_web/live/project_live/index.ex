@@ -5,9 +5,9 @@ defmodule ThevisWeb.ProjectLive.Index do
 
   use ThevisWeb, :live_view
 
+  alias Thevis.Accounts
   alias Thevis.Projects
   alias Thevis.Projects.Project
-  alias Thevis.Accounts
 
   @impl true
   def mount(_params, _session, socket) do

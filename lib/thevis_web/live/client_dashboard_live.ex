@@ -44,18 +44,16 @@ defmodule ThevisWeb.ClientDashboardLive do
 
   defp get_user_companies(user) do
     # Get companies via roles
-    user
-    |> Thevis.Repo.preload(:roles)
-    |> Map.get(:roles, [])
-    |> Enum.map(& &1.company_id)
-    |> then(fn company_ids ->
-      if Enum.empty?(company_ids) do
-        []
-      else
-        Accounts.list_companies()
-        |> Enum.filter(fn company -> company.id in company_ids end)
-      end
-    end)
+    preloaded_user = Thevis.Repo.preload(user, :roles)
+    roles = Map.get(preloaded_user, :roles, [])
+    company_ids = Enum.map(roles, & &1.company_id)
+
+    if Enum.empty?(company_ids) do
+      []
+    else
+      all_companies = Accounts.list_companies()
+      Enum.filter(all_companies, fn company -> company.id in company_ids end)
+    end
   end
 
   defp load_companies_data(companies) do

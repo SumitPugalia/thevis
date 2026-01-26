@@ -6,8 +6,8 @@ defmodule Thevis.Services do
   import Ecto.Query, warn: false
   alias Thevis.Repo
 
-  alias Thevis.Services.Service
   alias Thevis.Accounts.Company
+  alias Thevis.Services.Service
 
   ## Services
 

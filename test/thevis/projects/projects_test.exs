@@ -5,10 +5,10 @@ defmodule Thevis.ProjectsTest do
 
   use Thevis.DataCase
 
-  alias Thevis.Projects
-  alias Thevis.Projects.Project
   alias Thevis.Accounts
   alias Thevis.Products
+  alias Thevis.Projects
+  alias Thevis.Projects.Project
 
   describe "projects for products" do
     setup do

@@ -6,7 +6,9 @@ defmodule Thevis.AccountsTest do
   use Thevis.DataCase
 
   alias Thevis.Accounts
-  alias Thevis.Accounts.{User, Company, Role}
+  alias Thevis.Accounts.Company
+  alias Thevis.Accounts.Role
+  alias Thevis.Accounts.User
 
   describe "users" do
     @valid_attrs %{
@@ -70,7 +72,8 @@ defmodule Thevis.AccountsTest do
 
     test "list_users/0 returns all users" do
       {:ok, user1} = Accounts.create_user(@valid_attrs)
-      {:ok, _user2} = Accounts.create_user(Map.put(@valid_attrs, :email, "user2@example.com"))
+      user2_attrs = Map.put(@valid_attrs, :email, "user2@example.com")
+      {:ok, _user2} = Accounts.create_user(user2_attrs)
 
       users = Accounts.list_users()
       assert length(users) >= 2
@@ -81,9 +84,10 @@ defmodule Thevis.AccountsTest do
       {:ok, _client} = Accounts.create_user(@valid_attrs)
 
       {:ok, _consultant} =
-        Accounts.create_user(
-          Map.merge(@valid_attrs, %{email: "consultant@example.com", role: :consultant})
-        )
+        consultant_attrs =
+        Map.merge(@valid_attrs, %{email: "consultant@example.com", role: :consultant})
+
+      Accounts.create_user(consultant_attrs)
 
       clients = Accounts.list_users(role: :client)
       assert Enum.all?(clients, &(&1.role == :client))
@@ -144,9 +148,9 @@ defmodule Thevis.AccountsTest do
       {:ok, company1} = Accounts.create_company(@valid_attrs)
 
       {:ok, _company2} =
-        Accounts.create_company(
-          Map.merge(@valid_attrs, %{name: "Company 2", domain: "company2.com"})
-        )
+        company2_attrs = Map.merge(@valid_attrs, %{name: "Company 2", domain: "company2.com"})
+
+      Accounts.create_company(company2_attrs)
 
       companies = Accounts.list_companies()
       assert length(companies) >= 2
@@ -156,14 +160,14 @@ defmodule Thevis.AccountsTest do
     test "list_companies/1 with company_type filter returns filtered companies" do
       {:ok, _product_company} = Accounts.create_company(@valid_attrs)
 
-      {:ok, _service_company} =
-        Accounts.create_company(
-          Map.merge(@valid_attrs, %{
-            name: "Service Co",
-            domain: "service.com",
-            company_type: :service_based
-          })
-        )
+      service_company_attrs =
+        Map.merge(@valid_attrs, %{
+          name: "Service Co",
+          domain: "service.com",
+          company_type: :service_based
+        })
+
+      {:ok, _service_company} = Accounts.create_company(service_company_attrs)
 
       product_companies = Accounts.list_companies(company_type: :product_based)
       assert Enum.all?(product_companies, &(&1.company_type == :product_based))
@@ -205,7 +209,7 @@ defmodule Thevis.AccountsTest do
       {:ok, company} =
         Accounts.add_competitor(company, %{name: "Comp1", domain: "comp1.com", industry: "Tech"})
 
-      {:ok, company} =
+      {:ok, company2} =
         Accounts.add_competitor(company, %{name: "Comp2", domain: "comp2.com", industry: "Tech"})
 
       competitors = Accounts.list_competitors(company)
@@ -221,7 +225,7 @@ defmodule Thevis.AccountsTest do
           company_type: :product_based
         })
 
-      {:ok, company} =
+      {:ok, updated_company1} =
         Accounts.add_competitor(company, %{
           name: "Competitor",
           domain: "comp.com",
@@ -232,7 +236,7 @@ defmodule Thevis.AccountsTest do
 
       assert {:ok, updated_company} = Accounts.remove_competitor(company, 0)
       competitors = Accounts.list_competitors(updated_company)
-      assert length(competitors) == 0
+      assert competitors == []
     end
 
     test "remove_competitor/2 returns error for invalid index" do
@@ -256,7 +260,7 @@ defmodule Thevis.AccountsTest do
           company_type: :product_based
         })
 
-      {:ok, company} =
+      {:ok, updated_company1} =
         Accounts.add_competitor(company, %{
           name: "Competitor",
           domain: "comp.com",

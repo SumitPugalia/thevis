@@ -5,14 +5,15 @@ defmodule ThevisWeb.ProductLive.Index do
 
   use ThevisWeb, :live_view
 
+  alias Thevis.Accounts
   alias Thevis.Products
   alias Thevis.Products.Product
-  alias Thevis.Accounts
 
   @impl true
   def mount(_params, _session, socket) do
     companies = Accounts.list_companies(company_type: :product_based)
-    {:ok, assign(socket, companies: companies) |> stream(:products, [])}
+    socket = stream(assign(socket, companies: companies), :products, [])
+    {:ok, socket}
   end
 
   @impl true

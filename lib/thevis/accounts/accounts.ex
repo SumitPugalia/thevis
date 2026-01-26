@@ -6,7 +6,9 @@ defmodule Thevis.Accounts do
   import Ecto.Query, warn: false
   alias Thevis.Repo
 
-  alias Thevis.Accounts.{User, Company, Role}
+  alias Thevis.Accounts.Company
+  alias Thevis.Accounts.Role
+  alias Thevis.Accounts.User
 
   ## Users
 
@@ -297,7 +299,7 @@ defmodule Thevis.Accounts do
       |> Enum.reject(fn {_k, v} -> is_nil(v) end)
       |> Enum.into(%{})
 
-    updated_competitors = competitors ++ [new_competitor]
+    updated_competitors = Enum.reverse([new_competitor | competitors])
 
     company
     |> Company.changeset(%{competitors: updated_competitors})

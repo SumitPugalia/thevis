@@ -10,24 +10,22 @@ defmodule ThevisWeb.Live.Hooks.AssignCurrentUser do
     # Get token from session
     token = Map.get(session, "guardian_default_token")
 
-    if token do
-      # Decode and verify the token
-      case Guardian.decode_and_verify(token) do
-        {:ok, claims} ->
-          # Get user from claims
-          case Guardian.resource_from_claims(claims) do
-            {:ok, user} ->
-              {:cont, assign(socket, :current_user, user)}
+    current_user = get_user_from_token(token)
+    {:cont, assign(socket, :current_user, current_user)}
+  end
 
-            {:error, _reason} ->
-              {:cont, assign(socket, :current_user, nil)}
-          end
+  defp get_user_from_token(nil), do: nil
 
-        {:error, _reason} ->
-          {:cont, assign(socket, :current_user, nil)}
-      end
-    else
-      {:cont, assign(socket, :current_user, nil)}
+  defp get_user_from_token(token) do
+    case Guardian.decode_and_verify(token) do
+      {:ok, claims} ->
+        case Guardian.resource_from_claims(claims) do
+          {:ok, user} -> user
+          {:error, _reason} -> nil
+        end
+
+      {:error, _reason} ->
+        nil
     end
   end
 end

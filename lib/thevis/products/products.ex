@@ -6,8 +6,9 @@ defmodule Thevis.Products do
   import Ecto.Query, warn: false
   alias Thevis.Repo
 
-  alias Thevis.Products.{Product, CompetitorProduct}
   alias Thevis.Accounts.Company
+  alias Thevis.Products.CompetitorProduct
+  alias Thevis.Products.Product
 
   ## Products
 

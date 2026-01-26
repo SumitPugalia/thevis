@@ -5,7 +5,9 @@ defmodule Thevis.Factory do
 
   use ExMachina.Ecto, repo: Thevis.Repo
 
-  alias Thevis.Accounts.{User, Company, Role}
+  alias Thevis.Accounts.Company
+  alias Thevis.Accounts.Role
+  alias Thevis.Accounts.User
 
   def user_factory do
     %User{

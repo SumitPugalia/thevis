@@ -144,12 +144,7 @@ defmodule ThevisWeb.UserRegistrationLive do
     user_params = Map.get(params, "user", %{})
     terms_value = Map.get(params, "terms")
 
-    unless terms_value == "true" || terms_value == true do
-      {:noreply,
-       socket
-       |> put_flash(:error, "Please accept the Terms of Service and Privacy Policy to continue.")
-       |> assign(:terms_accepted, false)}
-    else
+    if terms_value == "true" || terms_value == true do
       user_params = Map.put(user_params, "role", "client")
 
       case Accounts.create_user(user_params) do
@@ -162,6 +157,11 @@ defmodule ThevisWeb.UserRegistrationLive do
         {:error, %Ecto.Changeset{} = changeset} ->
           {:noreply, assign(socket, :form, to_form(changeset))}
       end
+    else
+      {:noreply,
+       socket
+       |> put_flash(:error, "Please accept the Terms of Service and Privacy Policy to continue.")
+       |> assign(:terms_accepted, false)}
     end
   end
 end

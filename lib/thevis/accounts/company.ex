@@ -50,16 +50,20 @@ defmodule Thevis.Accounts.Company do
     competitors = get_change(changeset, :competitors) || get_field(changeset, :competitors)
 
     if competitors && is_list(competitors) do
-      Enum.reduce(competitors, changeset, fn competitor, acc ->
-        if is_map(competitor) do
-          validate_competitor_fields(acc, competitor)
-        else
-          add_error(acc, :competitors, "must be a list of maps")
-        end
-      end)
+      validate_competitors_list(changeset, competitors)
     else
       changeset
     end
+  end
+
+  defp validate_competitors_list(changeset, competitors) do
+    Enum.reduce(competitors, changeset, fn competitor, acc ->
+      if is_map(competitor) do
+        validate_competitor_fields(acc, competitor)
+      else
+        add_error(acc, :competitors, "must be a list of maps")
+      end
+    end)
   end
 
   defp validate_competitor_fields(changeset, competitor) do

@@ -11,9 +11,12 @@ defmodule ThevisWeb.PageLive do
   def mount(_params, _session, socket) do
     current_user = socket.assigns[:current_user]
 
-    {:ok,
-     assign(socket, :page_title, "thevis.ai - Making brands visible to AI")
-     |> assign(:current_user, current_user)}
+    socket =
+      socket
+      |> assign(:page_title, "thevis.ai - Making brands visible to AI")
+      |> assign(:current_user, current_user)
+
+    {:ok, socket}
   end
 
   @impl true

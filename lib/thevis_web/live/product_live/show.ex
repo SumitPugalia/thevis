@@ -5,8 +5,8 @@ defmodule ThevisWeb.ProductLive.Show do
 
   use ThevisWeb, :live_view
 
-  alias Thevis.Products
   alias Thevis.Accounts
+  alias Thevis.Products
 
   @impl true
   def mount(_params, _session, socket) do

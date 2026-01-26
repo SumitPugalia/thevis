@@ -13,7 +13,8 @@ defmodule Thevis.Guardian do
 
   def build_claims(claims, _resource, _opts) do
     # Add created_at timestamp to claims for token validation
-    claims = Map.put(claims, "created_at", DateTime.utc_now() |> DateTime.to_unix())
+    created_at = DateTime.to_unix(DateTime.utc_now())
+    claims = Map.put(claims, "created_at", created_at)
     {:ok, claims}
   end
 

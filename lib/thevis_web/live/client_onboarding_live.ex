@@ -376,9 +376,11 @@ defmodule ThevisWeb.ClientOnboardingLive do
   def handle_event("validate_product", %{"product" => product_params}, socket) do
     company = socket.assigns[:company]
 
+    merged_params = Map.merge(product_params, %{"company_id" => company.id})
+
     changeset =
       %Products.Product{}
-      |> Products.Product.changeset(Map.merge(product_params, %{"company_id" => company.id}))
+      |> Products.Product.changeset(merged_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, product_form: to_form(changeset, as: "product"))}
@@ -388,9 +390,11 @@ defmodule ThevisWeb.ClientOnboardingLive do
   def handle_event("add_product", %{"product" => product_params}, socket) do
     company = socket.assigns[:company]
 
+    merged_params = Map.merge(product_params, %{"company_id" => company.id})
+
     changeset =
       %Products.Product{}
-      |> Products.Product.changeset(Map.merge(product_params, %{"company_id" => company.id}))
+      |> Products.Product.changeset(merged_params)
 
     if changeset.valid? do
       product_data = %{
@@ -402,7 +406,8 @@ defmodule ThevisWeb.ClientOnboardingLive do
 
       # Add product to stream (we'll save to DB later in complete_onboarding)
       temp_id = "product-#{System.unique_integer([:positive])}"
-      product = Map.merge(product_data, %{id: temp_id})
+      merged_product_data = Map.merge(product_data, %{id: temp_id})
+      product = merged_product_data
 
       {:noreply,
        socket
