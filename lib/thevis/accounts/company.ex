@@ -23,6 +23,20 @@ defmodule Thevis.Accounts.Company do
     timestamps(type: :utc_datetime_usec)
   end
 
+  @type t :: %__MODULE__{
+          id: binary(),
+          name: String.t(),
+          domain: String.t(),
+          industry: String.t(),
+          description: String.t() | nil,
+          website_url: String.t() | nil,
+          company_type: :product_based | :service_based,
+          competitors: [map()],
+          roles: Ecto.Association.NotLoaded.t() | [Thevis.Accounts.Role.t()],
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   @doc false
   def changeset(company, attrs) do
     company

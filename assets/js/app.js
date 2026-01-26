@@ -24,12 +24,71 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/thevis"
 import topbar from "../vendor/topbar"
+import {Chart, registerables} from "chart.js"
+
+// Register Chart.js components
+Chart.register(...registerables)
+
+// Chart.js hook for rendering confidence charts
+const ConfidenceChart = {
+  mounted() {
+    const canvas = this.el
+    const chartData = JSON.parse(canvas.dataset.chartData)
+    
+    this.chart = new Chart(canvas, {
+      type: "line",
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: "top"
+          },
+          tooltip: {
+            mode: "index",
+            intersect: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              callback: function(value) {
+                return value + "%"
+              }
+            }
+            }
+        }
+      }
+    })
+  },
+  
+  updated() {
+    if (this.chart) {
+      const chartData = JSON.parse(this.el.dataset.chartData)
+      this.chart.data = chartData
+      this.chart.update()
+    }
+  },
+  
+  destroyed() {
+    if (this.chart) {
+      this.chart.destroy()
+    }
+  }
+}
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {
+    ...colocatedHooks,
+    ConfidenceChart: ConfidenceChart
+  },
 })
 
 // Show progress bar on live navigation and form submits

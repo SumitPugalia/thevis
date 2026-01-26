@@ -27,6 +27,23 @@ defmodule Thevis.Products.Product do
     timestamps(type: :utc_datetime_usec)
   end
 
+  @type t :: %__MODULE__{
+          id: binary(),
+          name: String.t(),
+          description: String.t() | nil,
+          category: String.t() | nil,
+          product_type: :cosmetic | :edible | :sweet | :d2c | :fashion | :wellness | :other,
+          launch_date: Date.t() | nil,
+          launch_window_start: Date.t() | nil,
+          launch_window_end: Date.t() | nil,
+          company_id: binary(),
+          company: Ecto.Association.NotLoaded.t() | Thevis.Accounts.Company.t(),
+          competitor_products:
+            Ecto.Association.NotLoaded.t() | [Thevis.Products.CompetitorProduct.t()],
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   @doc """
   Computed field: checks if product is currently in launch window.
   """

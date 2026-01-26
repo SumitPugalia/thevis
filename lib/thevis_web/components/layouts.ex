@@ -57,7 +57,7 @@ defmodule ThevisWeb.Layouts do
                   <img
                     src={~p"/images/thevis.png"}
                     alt="thevis.ai"
-                    class={if(is_landing_page, do: "h-8", else: "h-6")}
+                    class={if(is_landing_page, do: "h-20", else: "h-20")}
                   />
                 </.link>
               </div>

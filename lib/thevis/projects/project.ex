@@ -25,6 +25,21 @@ defmodule Thevis.Projects.Project do
     timestamps(type: :utc_datetime_usec)
   end
 
+  @type t :: %__MODULE__{
+          id: binary(),
+          name: String.t(),
+          description: String.t() | nil,
+          status: :active | :paused | :archived,
+          scan_frequency: :daily | :weekly | :monthly,
+          project_type: :product_launch | :ongoing_monitoring | :audit_only,
+          urgency_level: :standard | :high | :critical,
+          is_category_project: boolean(),
+          product_id: binary(),
+          product: Product.t() | Ecto.Association.NotLoaded.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   @doc false
   def changeset(project, attrs) do
     project

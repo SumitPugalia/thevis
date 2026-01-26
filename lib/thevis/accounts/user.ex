@@ -22,6 +22,19 @@ defmodule Thevis.Accounts.User do
     timestamps(type: :utc_datetime_usec)
   end
 
+  @type t :: %__MODULE__{
+          id: binary(),
+          email: String.t(),
+          name: String.t(),
+          hashed_password: String.t(),
+          password: String.t() | nil,
+          role: :consultant | :client,
+          logged_at: DateTime.t() | nil,
+          roles: Ecto.Association.NotLoaded.t() | [Thevis.Accounts.Role.t()],
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   @doc """
   A user changeset for registration.
   """

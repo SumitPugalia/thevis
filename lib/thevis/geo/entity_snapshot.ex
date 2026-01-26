@@ -24,6 +24,20 @@ defmodule Thevis.Geo.EntitySnapshot do
     timestamps(type: :utc_datetime_usec)
   end
 
+  @type t :: %__MODULE__{
+          id: binary(),
+          optimizable_type: :product | :service,
+          optimizable_id: binary(),
+          ai_description: String.t(),
+          confidence_score: float() | nil,
+          source_llm: String.t() | nil,
+          prompt_template: String.t() | nil,
+          scan_run_id: binary(),
+          scan_run: ScanRun.t() | Ecto.Association.NotLoaded.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   @doc false
   def changeset(entity_snapshot, attrs) do
     entity_snapshot

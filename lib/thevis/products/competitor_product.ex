@@ -20,6 +20,18 @@ defmodule Thevis.Products.CompetitorProduct do
     timestamps(type: :utc_datetime_usec)
   end
 
+  @type t :: %__MODULE__{
+          id: binary(),
+          name: String.t(),
+          description: String.t() | nil,
+          category: String.t() | nil,
+          brand_name: String.t() | nil,
+          product_id: binary(),
+          product: Thevis.Products.Product.t() | Ecto.Association.NotLoaded.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   @doc false
   def changeset(competitor_product, attrs) do
     competitor_product

@@ -95,15 +95,53 @@ defmodule ThevisWeb.ClientDashboardLive do
       # Get latest scan results for each project
       projects_with_scans = Enum.map(projects, &enrich_project_with_scans/1)
 
+      # Get historical confidence data for charts
+      confidence_history = get_confidence_history(projects_with_scans)
+
       Map.merge(company, %{
         products: products,
         services: services,
         products_count: length(products),
         services_count: length(services),
         projects: projects_with_scans,
-        projects_count: length(projects_with_scans)
+        projects_count: length(projects_with_scans),
+        confidence_history: confidence_history
       })
     end)
+  end
+
+  defp get_confidence_history(projects) do
+    # Create a map of project_id -> project_name for quick lookup
+    project_map = Enum.into(projects, %{}, fn project -> {project.id, project.name} end)
+
+    # Get all scan runs for all projects
+    all_scan_runs =
+      Enum.flat_map(projects, fn project ->
+        Scans.list_scan_runs(project)
+        |> Enum.take(20)
+      end)
+      |> Enum.filter(&(&1.status == :completed && &1.completed_at != nil))
+      |> Enum.sort_by(& &1.completed_at, {:desc, DateTime})
+      |> Enum.take(30)
+
+    # Get entity snapshots for these scan runs
+    snapshots =
+      Enum.flat_map(all_scan_runs, fn scan_run ->
+        Geo.list_entity_snapshots(scan_run)
+        |> Enum.map(fn snapshot ->
+          project_name = Map.get(project_map, scan_run.project_id, "Unknown")
+
+          %{
+            date: snapshot.inserted_at,
+            confidence: snapshot.confidence_score || 0.0,
+            project_name: project_name
+          }
+        end)
+      end)
+      |> Enum.sort_by(& &1.date, {:asc, DateTime})
+      |> Enum.take(30)
+
+    snapshots
   end
 
   @impl true
@@ -508,6 +546,28 @@ defmodule ThevisWeb.ClientDashboardLive do
             </div>
           </div>
         </div>
+        
+    <!-- Charts Section -->
+        <%= if has_chart_data?(@companies) do %>
+          <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6">Confidence Score Trends</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <%= for company <- @companies do %>
+                <%= if length(company.confidence_history) > 0 do %>
+                  <div class="border border-gray-200 rounded-lg p-4">
+                    <h3 class="text-sm font-medium text-gray-700 mb-4">{company.name}</h3>
+                    <canvas
+                      id={"confidence-chart-#{company.id}"}
+                      phx-hook="ConfidenceChart"
+                      data-chart-data={Jason.encode!(format_chart_data(company.confidence_history))}
+                    >
+                    </canvas>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
       </div>
     </Layouts.app>
     """
@@ -642,4 +702,32 @@ defmodule ThevisWeb.ClientDashboardLive do
   defp confidence_color(confidence) when confidence >= 0.8, do: "text-green-600"
   defp confidence_color(confidence) when confidence >= 0.5, do: "text-yellow-600"
   defp confidence_color(_confidence), do: "text-red-600"
+
+  defp has_chart_data?(companies) do
+    Enum.any?(companies, fn company -> company.confidence_history != [] end)
+  end
+
+  defp format_chart_data(history) do
+    labels =
+      Enum.map(history, fn item ->
+        item.date
+        |> DateTime.to_date()
+        |> Date.to_string()
+      end)
+
+    datasets = [
+      %{
+        label: "Confidence Score",
+        data: Enum.map(history, &Float.round(&1.confidence * 100, 1)),
+        borderColor: "rgb(59, 130, 246)",
+        backgroundColor: "rgba(59, 130, 246, 0.1)",
+        tension: 0.4
+      }
+    ]
+
+    %{
+      labels: labels,
+      datasets: datasets
+    }
+  end
 end

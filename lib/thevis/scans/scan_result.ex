@@ -21,6 +21,17 @@ defmodule Thevis.Scans.ScanResult do
     timestamps(type: :utc_datetime_usec)
   end
 
+  @type t :: %__MODULE__{
+          id: binary(),
+          result_type: String.t(),
+          data: map() | nil,
+          metrics: map() | nil,
+          scan_run_id: binary(),
+          scan_run: ScanRun.t() | Ecto.Association.NotLoaded.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   @doc false
   def changeset(scan_result, attrs) do
     scan_result

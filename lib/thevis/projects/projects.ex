@@ -177,4 +177,35 @@ defmodule Thevis.Projects do
   def get_product_for_project(%Project{} = project) do
     Thevis.Repo.preload(project, :product).product
   end
+
+  @doc """
+  Checks if a user has access to a project.
+
+  Consultants have access to all projects.
+  Clients have access only to projects for their companies.
+
+  ## Examples
+
+      iex> user_has_access?(project, user)
+      true
+
+  """
+  def user_has_access?(%Project{} = _project, %{role: :consultant}), do: true
+
+  def user_has_access?(%Project{} = project, user) do
+    # Preload product and company to check access
+    project_with_associations =
+      project
+      |> Repo.preload(product: :company)
+
+    if project_with_associations.product do
+      company = project_with_associations.product.company
+      user_companies = Thevis.Accounts.list_companies_for_user(user)
+      Enum.any?(user_companies, &(&1.id == company.id))
+    else
+      false
+    end
+  end
+
+  def user_has_access?(_project, _user), do: false
 end

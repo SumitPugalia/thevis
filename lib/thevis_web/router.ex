@@ -104,6 +104,10 @@ defmodule ThevisWeb.Router do
     live "/projects/:id/edit", ProjectLive.Index, :edit
     live "/projects/:id/scans", ScanLive.Index, :index
     live "/projects/:id/scans/:scan_run_id", ScanLive.Show, :show
+
+    # Report download (admin)
+    get "/projects/:project_id/report", ReportController, :download
+    get "/projects/:project_id/report/:scan_run_id", ReportController, :download
   end
 
   # Other scopes may use custom stacks.

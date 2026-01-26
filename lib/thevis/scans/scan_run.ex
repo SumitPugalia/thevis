@@ -24,6 +24,19 @@ defmodule Thevis.Scans.ScanRun do
     timestamps(type: :utc_datetime_usec)
   end
 
+  @type t :: %__MODULE__{
+          id: binary(),
+          status: :pending | :running | :completed | :failed,
+          scan_type: :entity_probe | :recall | :authority | :consistency | :full,
+          started_at: DateTime.t() | nil,
+          completed_at: DateTime.t() | nil,
+          project_id: binary(),
+          project: Project.t() | Ecto.Association.NotLoaded.t(),
+          scan_results: Ecto.Association.NotLoaded.t() | [Thevis.Scans.ScanResult.t()],
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   @doc false
   def changeset(scan_run, attrs) do
     scan_run

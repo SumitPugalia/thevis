@@ -18,6 +18,17 @@ defmodule Thevis.Accounts.Role do
     timestamps(type: :utc_datetime_usec)
   end
 
+  @type t :: %__MODULE__{
+          id: binary(),
+          role_type: :consultant | :client | :owner,
+          user_id: binary(),
+          user: Thevis.Accounts.User.t() | Ecto.Association.NotLoaded.t(),
+          company_id: binary(),
+          company: Thevis.Accounts.Company.t() | Ecto.Association.NotLoaded.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   @doc false
   def changeset(role, attrs) do
     role
