@@ -186,8 +186,7 @@ defmodule Thevis.ScansTest do
         })
 
       # Mock AI adapter for recall tests
-      Thevis.AI.MockAdapter
-      |> expect(:chat_completion, 6, fn _messages, _opts ->
+      expect(Thevis.AI.MockAdapter, :chat_completion, 6, fn _messages, _opts ->
         {:ok,
          %{
            "choices" => [
@@ -220,8 +219,7 @@ defmodule Thevis.ScansTest do
         })
 
       # Mock AI adapter to return error (test_recall generates 6 prompts by default)
-      Thevis.AI.MockAdapter
-      |> expect(:chat_completion, 6, fn _messages, _opts ->
+      expect(Thevis.AI.MockAdapter, :chat_completion, 6, fn _messages, _opts ->
         {:error, :timeout}
       end)
 

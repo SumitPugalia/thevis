@@ -51,8 +51,7 @@ defmodule Thevis.Geo.RecallTestTest do
     test "detects when product is mentioned in response" do
       product = %Product{name: "Glow Serum", category: "skincare", product_type: :cosmetic}
 
-      Thevis.AI.MockAdapter
-      |> expect(:chat_completion, fn _messages, _opts ->
+      expect(Thevis.AI.MockAdapter, :chat_completion, fn _messages, _opts ->
         {:ok,
          %{
            "choices" => [
@@ -78,8 +77,7 @@ defmodule Thevis.Geo.RecallTestTest do
     test "detects when product is not mentioned" do
       product = %Product{name: "Glow Serum", category: "skincare", product_type: :cosmetic}
 
-      Thevis.AI.MockAdapter
-      |> expect(:chat_completion, fn _messages, _opts ->
+      expect(Thevis.AI.MockAdapter, :chat_completion, fn _messages, _opts ->
         {:ok,
          %{
            "choices" => [
@@ -103,8 +101,7 @@ defmodule Thevis.Geo.RecallTestTest do
     test "handles AI adapter errors" do
       product = %Product{name: "Glow Serum", category: "skincare", product_type: :cosmetic}
 
-      Thevis.AI.MockAdapter
-      |> expect(:chat_completion, fn _messages, _opts ->
+      expect(Thevis.AI.MockAdapter, :chat_completion, fn _messages, _opts ->
         {:error, :timeout}
       end)
 
@@ -118,8 +115,7 @@ defmodule Thevis.Geo.RecallTestTest do
       product = %Product{name: "Glow Serum", category: "skincare", product_type: :cosmetic}
 
       # Mock multiple calls (one for each prompt category we're testing)
-      Thevis.AI.MockAdapter
-      |> expect(:chat_completion, 2, fn _messages, _opts ->
+      expect(Thevis.AI.MockAdapter, :chat_completion, 2, fn _messages, _opts ->
         {:ok,
          %{
            "choices" => [
@@ -145,8 +141,7 @@ defmodule Thevis.Geo.RecallTestTest do
     test "filters prompts by category" do
       product = %Product{name: "Test Product", category: "skincare", product_type: :cosmetic}
 
-      Thevis.AI.MockAdapter
-      |> expect(:chat_completion, 1, fn _messages, _opts ->
+      expect(Thevis.AI.MockAdapter, :chat_completion, 1, fn _messages, _opts ->
         {:ok,
          %{
            "choices" => [
