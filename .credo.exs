@@ -39,7 +39,7 @@
         {Credo.Check.Readability.RedundantBlankLines},
         {Credo.Check.Readability.Semicolons},
         {Credo.Check.Readability.SeparateAliasRequire},
-        {Credo.Check.Readability.SinglePipe},
+        {Credo.Check.Readability.SinglePipe, priority: :low},
         {Credo.Check.Readability.Specs, false},
         {Credo.Check.Readability.StrictModuleLayout, false},
         {Credo.Check.Readability.TrailingBlankLine},

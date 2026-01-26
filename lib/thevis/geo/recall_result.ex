@@ -6,8 +6,8 @@ defmodule Thevis.Geo.RecallResult do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Thevis.Scans.ScanRun
   alias Thevis.Products.Product
+  alias Thevis.Scans.ScanRun
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id

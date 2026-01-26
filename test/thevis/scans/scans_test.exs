@@ -209,7 +209,7 @@ defmodule Thevis.ScansTest do
 
       # Verify recall results were stored
       recall_results = Thevis.Geo.list_recall_results(scan_run)
-      assert length(recall_results) > 0
+      assert recall_results != []
     end
 
     test "execute_scan/1 with recall type handles errors", %{project: project} do

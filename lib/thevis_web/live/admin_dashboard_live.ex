@@ -43,14 +43,20 @@ defmodule ThevisWeb.AdminDashboardLive do
 
   defp get_recent_scans do
     # Get recent scans across all projects
-    Projects.list_all_projects()
-    |> Enum.flat_map(fn project ->
-      Scans.list_scan_runs(project)
-      |> Enum.take(5)
-    end)
-    |> Enum.sort_by(& &1.inserted_at, {:desc, DateTime})
-    |> Enum.take(10)
-    |> Enum.map(fn scan ->
+    all_projects = Projects.list_all_projects()
+
+    scan_runs =
+      Enum.flat_map(all_projects, fn project ->
+        project_scans = Scans.list_scan_runs(project)
+        Enum.take(project_scans, 5)
+      end)
+
+    sorted_scans =
+      Enum.sort_by(scan_runs, & &1.inserted_at, {:desc, DateTime})
+
+    top_10_scans = Enum.take(sorted_scans, 10)
+
+    Enum.map(top_10_scans, fn scan ->
       Thevis.Repo.preload(scan, :project)
     end)
   end

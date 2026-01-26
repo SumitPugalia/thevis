@@ -18,19 +18,14 @@ defmodule Thevis.Geo.RecallScorer do
 
   """
   def calculate_recall_percentage(results) when is_list(results) do
-    results
-    |> Enum.filter(&is_valid_result/1)
-    |> then(fn valid_results ->
-      if Enum.empty?(valid_results) do
-        0.0
-      else
-        mentioned_count =
-          valid_results
-          |> Enum.count(&(&1.mentioned == true))
+    valid_results = Enum.filter(results, &valid_result?/1)
 
-        mentioned_count / length(valid_results) * 100
-      end
-    end)
+    if Enum.empty?(valid_results) do
+      0.0
+    else
+      mentioned_count = Enum.count(valid_results, &(&1.mentioned == true))
+      mentioned_count / length(valid_results) * 100
+    end
   end
 
   def calculate_recall_percentage(_), do: 0.0
@@ -106,8 +101,8 @@ defmodule Thevis.Geo.RecallScorer do
       displacement_rate: 0.0
     }
 
-  defp is_valid_result(%{mentioned: _mentioned}), do: true
-  defp is_valid_result(_), do: false
+  defp valid_result?(%{mentioned: _mentioned}), do: true
+  defp valid_result?(_), do: false
 
   defp calculate_displacement_rate(product_results, competitor_results) do
     # Count how many prompts where product was mentioned but competitor wasn't

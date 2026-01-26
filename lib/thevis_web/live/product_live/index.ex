@@ -59,8 +59,8 @@ defmodule ThevisWeb.ProductLive.Index do
       if is_admin_route || (current_user && current_user.role == :consultant) do
         Accounts.list_companies(company_type: :product_based)
       else
-        Accounts.list_companies_for_user(current_user)
-        |> Enum.filter(&(&1.company_type == :product_based))
+        user_companies = Accounts.list_companies_for_user(current_user)
+        Enum.filter(user_companies, &(&1.company_type == :product_based))
       end
 
     socket

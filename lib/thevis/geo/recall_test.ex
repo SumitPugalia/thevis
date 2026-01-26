@@ -105,8 +105,7 @@ defmodule Thevis.Geo.RecallTest do
     filtered_prompts = Enum.filter(prompts, &(&1.category in categories))
 
     results =
-      filtered_prompts
-      |> Enum.map(fn %{category: category, prompt: prompt} ->
+      Enum.map(filtered_prompts, fn %{category: category, prompt: prompt} ->
         case execute_recall_test(prompt, product, opts) do
           {:ok, result} ->
             {:ok, Map.merge(result, %{category: category, prompt: prompt})}
@@ -156,11 +155,13 @@ defmodule Thevis.Geo.RecallTest do
     sentences = String.split(response_text, ~r/[.!?]+/, trim: true)
     product_name_words = String.split(product_name, " ", trim: true)
 
-    Enum.find_index(sentences, fn sentence ->
-      sentence_lower = String.downcase(sentence)
-      Enum.any?(product_name_words, &String.contains?(sentence_lower, &1))
-    end)
-    |> case do
+    mention_index =
+      Enum.find_index(sentences, fn sentence ->
+        sentence_lower = String.downcase(sentence)
+        Enum.any?(product_name_words, &String.contains?(sentence_lower, &1))
+      end)
+
+    case mention_index do
       nil -> nil
       index -> index + 1
     end

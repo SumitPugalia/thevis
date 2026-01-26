@@ -103,15 +103,19 @@ defmodule ThevisWeb.ProjectLive.Index do
         end
       end)
 
+    project = Projects.get_project!(id)
+    changeset = Project.changeset(project, %{})
+    form = to_form(changeset, as: "project")
+
     socket
     |> assign(:page_title, "Edit Project")
-    |> assign(:project, Projects.get_project!(id))
+    |> assign(:project, project)
     |> assign(:current_user, current_user)
     |> assign(:live_action, :edit)
     |> assign(:is_admin_route, is_admin_route)
     |> assign(:companies, companies)
     |> assign(:products, products)
-    |> assign(:form, to_form(Project.changeset(Projects.get_project!(id), %{}), as: "project"))
+    |> assign(:form, form)
   end
 
   defp load_user_projects(user) do

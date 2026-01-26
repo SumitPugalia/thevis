@@ -313,25 +313,18 @@ defmodule Thevis.Scans do
   end
 
   defp execute_recall_tests(scan_run, product) do
-    case RecallTest.test_recall(product) do
-      {:ok, results} ->
-        # Check if all results are errors
-        all_errors? = Enum.all?(results, &match?({:error, _}, &1))
+    {:ok, results} = RecallTest.test_recall(product)
 
-        if all_errors? do
-          # If all tests failed, extract the first error reason
-          {:error, _reason} = List.first(results)
-          mark_scan_failed(scan_run)
-          {:error, :all_tests_failed}
-        else
-          store_recall_results(scan_run, product, results)
-          mark_scan_completed(scan_run)
-          {:ok, results}
-        end
+    # Check if all results are errors
+    all_errors? = Enum.all?(results, &match?({:error, _}, &1))
 
-      {:error, reason} ->
-        mark_scan_failed(scan_run)
-        {:error, reason}
+    if all_errors? do
+      mark_scan_failed(scan_run)
+      {:error, :all_tests_failed}
+    else
+      store_recall_results(scan_run, product, results)
+      mark_scan_completed(scan_run)
+      {:ok, results}
     end
   end
 
