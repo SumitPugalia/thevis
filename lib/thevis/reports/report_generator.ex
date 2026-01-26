@@ -12,11 +12,11 @@ defmodule Thevis.Reports.ReportGenerator do
   """
 
   import Ecto.Query
-  alias Thevis.Repo
-  alias Thevis.Projects.Project
-  alias Thevis.Scans.ScanRun
   alias Thevis.Geo
+  alias Thevis.Projects.Project
+  alias Thevis.Repo
   alias Thevis.Reports.GeoScore
+  alias Thevis.Scans.ScanRun
 
   @doc """
   Generates a PDF report for a project's latest scan run.
@@ -53,44 +53,47 @@ defmodule Thevis.Reports.ReportGenerator do
 
   # Get scan run (latest if not specified) - preload project to avoid N+1
   defp get_scan_run(%Project{} = project, nil) do
-    ScanRun
-    |> where([s], s.project_id == ^project.id)
-    |> where([s], s.status == :completed)
-    |> order_by([s], desc: s.completed_at)
-    |> limit(1)
-    |> Repo.one()
-    |> case do
+    scan_run =
+      ScanRun
+      |> where([s], s.project_id == ^project.id)
+      |> where([s], s.status == :completed)
+      |> order_by([s], desc: s.completed_at)
+      |> limit(1)
+      |> Repo.one()
+
+    case scan_run do
       nil -> nil
-      scan_run -> Repo.preload(scan_run, :project)
+      found_scan_run -> Repo.preload(found_scan_run, :project)
     end
   end
 
   defp get_scan_run(%Project{} = project, scan_run_id) when not is_nil(scan_run_id) do
-    ScanRun
-    |> where([s], s.project_id == ^project.id)
-    |> where([s], s.id == ^scan_run_id)
-    |> Repo.one()
-    |> case do
+    scan_run =
+      ScanRun
+      |> where([s], s.project_id == ^project.id)
+      |> where([s], s.id == ^scan_run_id)
+      |> Repo.one()
+
+    case scan_run do
       nil -> nil
-      scan_run -> Repo.preload(scan_run, :project)
+      found_scan_run -> Repo.preload(found_scan_run, :project)
     end
   end
 
   # Collect all data needed for the report (with proper preloading to avoid N+1)
   defp collect_report_data(project, scan_run) do
     # Preload all associations in one query to avoid N+1
-    project_with_associations =
-      project
-      |> Repo.preload(product: :company)
+    project_with_associations = Repo.preload(project, product: :company)
 
     product = project_with_associations.product
     company = product.company
 
     # Get entity snapshot for this scan run (preload scan_run)
+    snapshots = Geo.list_entity_snapshots(scan_run)
+    first_snapshot = List.first(snapshots)
+
     entity_snapshot =
-      Geo.list_entity_snapshots(scan_run)
-      |> List.first()
-      |> case do
+      case first_snapshot do
         nil -> nil
         snapshot -> Repo.preload(snapshot, :scan_run)
       end
@@ -305,7 +308,7 @@ defmodule Thevis.Reports.ReportGenerator do
       """
     end}
 
-      #{if length(data.recall_results) > 0 do
+      #{if data.recall_results != [] do
       """
       <div class="section">
         <h2>Recall Test Results</h2>
@@ -318,21 +321,7 @@ defmodule Thevis.Reports.ReportGenerator do
             </tr>
           </thead>
           <tbody>
-            #{Enum.map(data.recall_results, fn result ->
-        category_display = result.prompt_category |> String.replace("_", " ") |> String.split(" ") |> Enum.map(&String.capitalize/1) |> Enum.join(" ")
-
-        """
-        <tr>
-          <td>#{category_display}</td>
-          <td>
-            <span class="badge #{if result.mentioned, do: "badge-success", else: "badge-danger"}">
-              #{if result.mentioned, do: "Yes", else: "No"}
-            </span>
-          </td>
-          <td>#{if result.mention_rank, do: result.mention_rank, else: "N/A"}</td>
-        </tr>
-        """
-      end) |> Enum.join()}
+            #{Enum.map_join(data.recall_results, &format_recall_result/1)}
           </tbody>
         </table>
       </div>
@@ -363,7 +352,7 @@ defmodule Thevis.Reports.ReportGenerator do
       <div class="section">
         <h2>Recommendations</h2>
         <ul>
-          #{generate_recommendations(data) |> Enum.map(&"<li>#{&1}</li>") |> Enum.join()}
+          #{Enum.map_join(generate_recommendations(data), &"<li>#{&1}</li>")}
         </ul>
       </div>
 
@@ -410,48 +399,7 @@ defmodule Thevis.Reports.ReportGenerator do
     do: "Poor AI visibility. Significant optimization needed to improve recognition."
 
   defp generate_recommendations(data) do
-    recommendations = []
-
-    recommendations =
-      if data.geo_score < 40 do
-        [
-          "Focus on improving entity recognition through better product descriptions and documentation.",
-          "Increase content creation and distribution to improve AI training signals."
-          | recommendations
-        ]
-      else
-        recommendations
-      end
-
-    recommendations =
-      if data.recall_percentage < 50 do
-        [
-          "Improve recall by optimizing product descriptions and ensuring consistent messaging across platforms."
-          | recommendations
-        ]
-      else
-        recommendations
-      end
-
-    recommendations =
-      if data.avg_mention_rank && data.avg_mention_rank > 3 do
-        [
-          "Work on improving mention rank by enhancing product visibility and authority."
-          | recommendations
-        ]
-      else
-        recommendations
-      end
-
-    recommendations =
-      if is_nil(data.entity_snapshot) do
-        [
-          "Entity recognition data not available. Run an entity probe scan to gather recognition data."
-          | recommendations
-        ]
-      else
-        recommendations
-      end
+    recommendations = build_recommendations(data, [])
 
     if Enum.empty?(recommendations) do
       ["Continue monitoring and maintain current optimization efforts."]
@@ -459,6 +407,52 @@ defmodule Thevis.Reports.ReportGenerator do
       recommendations
     end
   end
+
+  defp build_recommendations(data, acc) do
+    acc
+    |> add_geo_score_recommendation(data.geo_score)
+    |> add_recall_recommendation(data.recall_percentage)
+    |> add_mention_rank_recommendation(data.avg_mention_rank)
+    |> add_entity_snapshot_recommendation(data.entity_snapshot)
+  end
+
+  defp add_geo_score_recommendation(acc, geo_score) when geo_score < 40 do
+    [
+      "Focus on improving entity recognition through better product descriptions and documentation.",
+      "Increase content creation and distribution to improve AI training signals."
+      | acc
+    ]
+  end
+
+  defp add_geo_score_recommendation(acc, _geo_score), do: acc
+
+  defp add_recall_recommendation(acc, recall_percentage) when recall_percentage < 50 do
+    [
+      "Improve recall by optimizing product descriptions and ensuring consistent messaging across platforms."
+      | acc
+    ]
+  end
+
+  defp add_recall_recommendation(acc, _recall_percentage), do: acc
+
+  defp add_mention_rank_recommendation(acc, avg_mention_rank)
+       when not is_nil(avg_mention_rank) and avg_mention_rank > 3 do
+    [
+      "Work on improving mention rank by enhancing product visibility and authority."
+      | acc
+    ]
+  end
+
+  defp add_mention_rank_recommendation(acc, _avg_mention_rank), do: acc
+
+  defp add_entity_snapshot_recommendation(acc, nil) do
+    [
+      "Entity recognition data not available. Run an entity probe scan to gather recognition data."
+      | acc
+    ]
+  end
+
+  defp add_entity_snapshot_recommendation(acc, _entity_snapshot), do: acc
 
   defp format_description(description) when is_binary(description) do
     truncated = String.slice(description, 0..200)
@@ -468,5 +462,29 @@ defmodule Thevis.Reports.ReportGenerator do
     else
       truncated
     end
+  end
+
+  defp format_recall_result(result) do
+    category_display =
+      result.prompt_category
+      |> String.replace("_", " ")
+      |> String.split(" ")
+      |> Enum.map_join(" ", &String.capitalize/1)
+
+    badge_class = if result.mentioned, do: "badge-success", else: "badge-danger"
+    mentioned_text = if result.mentioned, do: "Yes", else: "No"
+    rank_text = if result.mention_rank, do: result.mention_rank, else: "N/A"
+
+    """
+    <tr>
+      <td>#{category_display}</td>
+      <td>
+        <span class="badge #{badge_class}">
+          #{mentioned_text}
+        </span>
+      </td>
+      <td>#{rank_text}</td>
+    </tr>
+    """
   end
 end

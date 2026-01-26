@@ -133,7 +133,7 @@ defmodule ThevisWeb.ClientDashboardLiveTest do
           project: project,
           status: :completed,
           scan_type: :entity_probe,
-          completed_at: DateTime.utc_now() |> DateTime.add(-7, :day)
+          completed_at: DateTime.add(DateTime.utc_now(), -7, :day)
         )
 
       scan_run2 =
@@ -141,7 +141,7 @@ defmodule ThevisWeb.ClientDashboardLiveTest do
           project: project,
           status: :completed,
           scan_type: :entity_probe,
-          completed_at: DateTime.utc_now() |> DateTime.add(-3, :day)
+          completed_at: DateTime.add(DateTime.utc_now(), -3, :day)
         )
 
       insert(:entity_snapshot,
@@ -149,7 +149,7 @@ defmodule ThevisWeb.ClientDashboardLiveTest do
         optimizable_type: :product,
         optimizable_id: product.id,
         confidence_score: 0.75,
-        inserted_at: DateTime.utc_now() |> DateTime.add(-7, :day)
+        inserted_at: DateTime.add(DateTime.utc_now(), -7, :day)
       )
 
       insert(:entity_snapshot,
@@ -157,7 +157,7 @@ defmodule ThevisWeb.ClientDashboardLiveTest do
         optimizable_type: :product,
         optimizable_id: product.id,
         confidence_score: 0.85,
-        inserted_at: DateTime.utc_now() |> DateTime.add(-3, :day)
+        inserted_at: DateTime.add(DateTime.utc_now(), -3, :day)
       )
 
       # Authenticate

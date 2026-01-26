@@ -194,9 +194,7 @@ defmodule Thevis.Projects do
 
   def user_has_access?(%Project{} = project, user) do
     # Preload product and company to check access
-    project_with_associations =
-      project
-      |> Repo.preload(product: :company)
+    project_with_associations = Repo.preload(project, product: :company)
 
     if project_with_associations.product do
       company = project_with_associations.product.company
