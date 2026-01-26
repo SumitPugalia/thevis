@@ -151,7 +151,7 @@ defmodule ThevisWeb.ClientDashboardLive do
           <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p class="mt-2 text-sm text-gray-600">Welcome back, {@current_user.name}</p>
         </div>
-
+        
     <!-- Companies Section -->
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
@@ -255,7 +255,7 @@ defmodule ThevisWeb.ClientDashboardLive do
                     <% end %>
                   </div>
                 <% end %>
-
+                
     <!-- Projects Section -->
                 <div class="mt-6 pt-6 border-t border-gray-200">
                   <div class="flex items-center justify-between mb-3">
@@ -375,7 +375,7 @@ defmodule ThevisWeb.ClientDashboardLive do
               </div>
             </div>
           <% end %>
-
+          
     <!-- Add Product Form Modal -->
           <%= if @show_product_form do %>
             <div
@@ -437,7 +437,7 @@ defmodule ThevisWeb.ClientDashboardLive do
               </div>
             </div>
           <% end %>
-
+          
     <!-- Add Service Form Modal -->
           <%= if @show_service_form do %>
             <div
@@ -507,7 +507,7 @@ defmodule ThevisWeb.ClientDashboardLive do
             </div>
           <% end %>
         </div>
-
+        
     <!-- Quick Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
@@ -544,7 +544,7 @@ defmodule ThevisWeb.ClientDashboardLive do
             </div>
           </div>
         </div>
-
+        
     <!-- Charts Section -->
         <%= if has_chart_data?(@companies) do %>
           <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
