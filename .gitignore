@@ -35,3 +35,6 @@ thevis-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# Dialyzer PLT files
+/priv/plts/
+

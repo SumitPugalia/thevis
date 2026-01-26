@@ -11,7 +11,12 @@ defmodule Thevis.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      dialyzer: [
+        flags: [:error_handling, :underspecs],
+        plt_add_apps: [:mix, :ex_unit],
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+      ]
     ]
   end
 
@@ -103,6 +108,10 @@ defmodule Thevis.MixProject do
       # Documentation
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
 
+      # Code Quality & Static Analysis
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+
       # Optional: Data pipelines (for future use)
       {:gen_stage, "~> 1.2"}
     ]
@@ -127,7 +136,14 @@ defmodule Thevis.MixProject do
         "esbuild thevis --minify",
         "phx.digest"
       ],
-      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
+      precommit: [
+        "compile --warning-as-errors",
+        "deps.unlock --unused",
+        "format",
+        "credo --strict",
+        "dialyzer",
+        "test"
+      ]
     ]
   end
 end
