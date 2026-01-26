@@ -86,7 +86,7 @@
                 </.link>
               </td>
             </tr>
-            <tr :if={Enum.empty?(@streams.scan_runs)}>
+            <tr :if={@streams.scan_runs == %{}}>
               <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
                 No scans yet. Click "Run Entity Probe" to start your first scan.
               </td>

@@ -8,9 +8,12 @@ defmodule ThevisWeb.ProductLive.Show do
   alias Thevis.Accounts
   alias Thevis.Products
 
+  on_mount {ThevisWeb.Live.Hooks.AssignCurrentUser, :assign_current_user}
+
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    current_user = socket.assigns[:current_user]
+    {:ok, assign(socket, :current_user, current_user)}
   end
 
   @impl true
@@ -22,13 +25,14 @@ defmodule ThevisWeb.ProductLive.Show do
      socket
      |> assign(:page_title, product.name)
      |> assign(:product, product)
-     |> assign(:company, company)}
+     |> assign(:company, company)
+     |> assign(:current_user, socket.assigns[:current_user])}
   end
 
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} current_user={@current_user} page_title={@page_title}>
       <div class="space-y-6">
         <div class="flex items-center justify-between">
           <div>

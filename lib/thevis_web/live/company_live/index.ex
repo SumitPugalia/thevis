@@ -8,9 +8,14 @@ defmodule ThevisWeb.CompanyLive.Index do
   alias Thevis.Accounts
   alias Thevis.Accounts.Company
 
+  on_mount {ThevisWeb.Live.Hooks.AssignCurrentUser, :assign_current_user}
+
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :companies, Accounts.list_companies())}
+    current_user = socket.assigns[:current_user]
+
+    {:ok,
+     assign(socket, :current_user, current_user) |> stream(:companies, Accounts.list_companies())}
   end
 
   @impl true
@@ -22,18 +27,21 @@ defmodule ThevisWeb.CompanyLive.Index do
     socket
     |> assign(:page_title, "Companies")
     |> assign(:company, nil)
+    |> assign(:current_user, socket.assigns[:current_user])
   end
 
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Company")
     |> assign(:company, %Company{})
+    |> assign(:current_user, socket.assigns[:current_user])
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Company")
     |> assign(:company, Accounts.get_company!(id))
+    |> assign(:current_user, socket.assigns[:current_user])
   end
 
   @impl true

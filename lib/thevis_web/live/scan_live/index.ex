@@ -12,7 +12,8 @@ defmodule ThevisWeb.ScanLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    current_user = socket.assigns[:current_user]
+    {:ok, assign(socket, :current_user, current_user)}
   end
 
   @impl true

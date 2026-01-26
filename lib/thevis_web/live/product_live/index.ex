@@ -9,10 +9,19 @@ defmodule ThevisWeb.ProductLive.Index do
   alias Thevis.Products
   alias Thevis.Products.Product
 
+  on_mount {ThevisWeb.Live.Hooks.AssignCurrentUser, :assign_current_user}
+
   @impl true
   def mount(_params, _session, socket) do
+    current_user = socket.assigns[:current_user]
     companies = Accounts.list_companies(company_type: :product_based)
-    socket = stream(assign(socket, companies: companies), :products, [])
+
+    socket =
+      socket
+      |> assign(:current_user, current_user)
+      |> assign(:companies, companies)
+      |> stream(:products, [])
+
     {:ok, socket}
   end
 
@@ -27,6 +36,7 @@ defmodule ThevisWeb.ProductLive.Index do
     socket
     |> assign(:page_title, "Products")
     |> assign(:product, nil)
+    |> assign(:current_user, socket.assigns[:current_user])
     |> stream(:products, products, reset: true)
   end
 
@@ -34,12 +44,14 @@ defmodule ThevisWeb.ProductLive.Index do
     socket
     |> assign(:page_title, "New Product")
     |> assign(:product, %Product{})
+    |> assign(:current_user, socket.assigns[:current_user])
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Product")
     |> assign(:product, Products.get_product!(id))
+    |> assign(:current_user, socket.assigns[:current_user])
   end
 
   defp load_products do
