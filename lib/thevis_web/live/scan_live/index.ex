@@ -55,9 +55,7 @@ defmodule ThevisWeb.ScanLive.Index do
         end
 
       {:error, changeset} ->
-        {:noreply,
-         socket
-         |> put_flash(:error, "Failed to create scan: #{inspect(changeset.errors)}")}
+        {:noreply, put_flash(socket, :error, "Failed to create scan: #{inspect(changeset.errors)}")}
     end
   end
 

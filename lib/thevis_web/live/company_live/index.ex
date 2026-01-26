@@ -13,9 +13,8 @@ defmodule ThevisWeb.CompanyLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     current_user = socket.assigns[:current_user]
-
-    {:ok,
-     assign(socket, :current_user, current_user) |> stream(:companies, Accounts.list_companies())}
+    socket = assign(socket, :current_user, current_user)
+    {:ok, stream(socket, :companies, Accounts.list_companies())}
   end
 
   @impl true

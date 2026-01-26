@@ -6,8 +6,8 @@ defmodule Thevis.Geo.EntityProbe do
   a given product or company entity.
   """
 
-  alias Thevis.AI
   alias Thevis.Accounts.Company
+  alias Thevis.AI
   alias Thevis.Geo.EntityParser
   alias Thevis.Geo.PromptTemplates
   alias Thevis.Products.Product

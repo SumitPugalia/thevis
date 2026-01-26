@@ -45,7 +45,29 @@ defmodule ThevisWeb.ClientDashboardLive do
     {:noreply, assign(socket, :page_title, "Dashboard")}
   end
 
-  defp get_user_companies(user) do
+      defp enrich_project_with_scans(project) do
+        latest_scan_run =
+          project
+          |> Scans.list_scan_runs()
+          |> List.first()
+
+        latest_snapshot = get_latest_snapshot(latest_scan_run)
+
+        Map.merge(project, %{
+          latest_scan_run: latest_scan_run,
+          latest_snapshot: latest_snapshot
+        })
+      end
+
+      defp get_latest_snapshot(nil), do: nil
+
+      defp get_latest_snapshot(scan_run) do
+        scan_run
+        |> Geo.list_entity_snapshots()
+        |> List.first()
+      end
+
+      defp get_user_companies(user) do
     # Get companies via roles
     preloaded_user = Thevis.Repo.preload(user, :roles)
     roles = Map.get(preloaded_user, :roles, [])
@@ -71,24 +93,7 @@ defmodule ThevisWeb.ClientDashboardLive do
       projects = Projects.list_projects_by_company(company)
 
       # Get latest scan results for each project
-      projects_with_scans =
-        Enum.map(projects, fn project ->
-          latest_scan_run =
-            Scans.list_scan_runs(project)
-            |> List.first()
-
-          latest_snapshot =
-            if latest_scan_run do
-              Geo.list_entity_snapshots(latest_scan_run) |> List.first()
-            else
-              nil
-            end
-
-          Map.merge(project, %{
-            latest_scan_run: latest_scan_run,
-            latest_snapshot: latest_snapshot
-          })
-        end)
+      projects_with_scans = Enum.map(projects, &enrich_project_with_scans/1)
 
       Map.merge(company, %{
         products: products,
@@ -110,7 +115,7 @@ defmodule ThevisWeb.ClientDashboardLive do
           <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p class="mt-2 text-sm text-gray-600">Welcome back, {@current_user.name}</p>
         </div>
-        
+
     <!-- Companies Section -->
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
@@ -214,7 +219,7 @@ defmodule ThevisWeb.ClientDashboardLive do
                     <% end %>
                   </div>
                 <% end %>
-                
+
     <!-- Projects Section -->
                 <div class="mt-6 pt-6 border-t border-gray-200">
                   <div class="flex items-center justify-between mb-3">
@@ -334,7 +339,7 @@ defmodule ThevisWeb.ClientDashboardLive do
               </div>
             </div>
           <% end %>
-          
+
     <!-- Add Product Form Modal -->
           <%= if @show_product_form do %>
             <div
@@ -396,7 +401,7 @@ defmodule ThevisWeb.ClientDashboardLive do
               </div>
             </div>
           <% end %>
-          
+
     <!-- Add Service Form Modal -->
           <%= if @show_service_form do %>
             <div
@@ -466,7 +471,7 @@ defmodule ThevisWeb.ClientDashboardLive do
             </div>
           <% end %>
         </div>
-        
+
     <!-- Quick Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">

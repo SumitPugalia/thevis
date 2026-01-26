@@ -17,7 +17,10 @@ defmodule ThevisWeb.ProjectLive.Show do
 
   @impl true
   def handle_params(%{"id" => id}, _url, socket) do
-    project = Projects.get_project!(id) |> Thevis.Repo.preload(:product)
+    project =
+      id
+      |> Projects.get_project!()
+      |> Thevis.Repo.preload(:product)
 
     {:noreply,
      socket

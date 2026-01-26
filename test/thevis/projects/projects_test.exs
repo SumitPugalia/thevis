@@ -10,25 +10,29 @@ defmodule Thevis.ProjectsTest do
   alias Thevis.Projects
   alias Thevis.Projects.Project
 
+  defp setup_company_and_product do
+    {:ok, company} =
+      Accounts.create_company(%{
+        name: "Product Company",
+        domain: "product.com",
+        industry: "Tech",
+        company_type: :product_based
+      })
+
+    {:ok, product} =
+      Products.create_product(company, %{
+        name: "Test Product",
+        description: "A test product",
+        category: "cosmetics",
+        product_type: :cosmetic
+      })
+
+    %{company: company, product: product}
+  end
+
   describe "projects for products" do
     setup do
-      {:ok, company} =
-        Accounts.create_company(%{
-          name: "Product Company",
-          domain: "product.com",
-          industry: "Tech",
-          company_type: :product_based
-        })
-
-      {:ok, product} =
-        Products.create_product(company, %{
-          name: "Test Product",
-          description: "A test product",
-          category: "cosmetics",
-          product_type: :cosmetic
-        })
-
-      %{company: company, product: product}
+      setup_company_and_product()
     end
 
     @valid_attrs %{
@@ -141,21 +145,7 @@ defmodule Thevis.ProjectsTest do
 
   describe "update_project/2" do
     setup do
-      {:ok, company} =
-        Accounts.create_company(%{
-          name: "Product Company",
-          domain: "product.com",
-          industry: "Tech",
-          company_type: :product_based
-        })
-
-      {:ok, product} =
-        Products.create_product(company, %{
-          name: "Test Product",
-          description: "A test product",
-          category: "cosmetics",
-          product_type: :cosmetic
-        })
+      %{product: product} = setup_company_and_product()
 
       {:ok, project} =
         Projects.create_project_for_product(product, %{
@@ -190,21 +180,7 @@ defmodule Thevis.ProjectsTest do
 
   describe "delete_project/1" do
     setup do
-      {:ok, company} =
-        Accounts.create_company(%{
-          name: "Product Company",
-          domain: "product.com",
-          industry: "Tech",
-          company_type: :product_based
-        })
-
-      {:ok, product} =
-        Products.create_product(company, %{
-          name: "Test Product",
-          description: "A test product",
-          category: "cosmetics",
-          product_type: :cosmetic
-        })
+      %{product: product} = setup_company_and_product()
 
       {:ok, project} =
         Projects.create_project_for_product(product, %{

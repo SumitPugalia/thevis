@@ -10,8 +10,8 @@ defmodule Thevis.Scans do
   alias Thevis.Geo.EntityProbe
   alias Thevis.Projects
   alias Thevis.Projects.Project
-  alias Thevis.Scans.ScanRun
   alias Thevis.Scans.ScanResult
+  alias Thevis.Scans.ScanRun
 
   ## Scan Runs
 
@@ -276,38 +276,45 @@ defmodule Thevis.Scans do
 
   """
   def execute_scan(%ScanRun{scan_type: :entity_probe} = scan_run) do
-    # Mark scan as started
     {:ok, scan_run} = mark_scan_started(scan_run)
 
-    # Get project and product
-    project = Projects.get_project!(scan_run.project_id) |> Thevis.Repo.preload(:product)
+    project =
+      scan_run.project_id
+      |> Projects.get_project!()
+      |> Thevis.Repo.preload(:product)
 
     if is_nil(project.product) do
       mark_scan_failed(scan_run)
       {:error, :product_not_found}
     else
-      # Probe the product
-      case EntityProbe.probe_entity(project.product) do
-        {:ok, snapshot_data} ->
-          # Store the snapshot
-          case Geo.create_entity_snapshot(scan_run, snapshot_data) do
-            {:ok, snapshot} ->
-              mark_scan_completed(scan_run)
-              {:ok, snapshot}
-
-            {:error, changeset} ->
-              mark_scan_failed(scan_run)
-              {:error, changeset}
-          end
-
-        {:error, reason} ->
-          mark_scan_failed(scan_run)
-          {:error, reason}
-      end
+      probe_and_store_snapshot(scan_run, project.product)
     end
   end
 
   def execute_scan(%ScanRun{} = scan_run) do
     {:error, {:unsupported_scan_type, scan_run.scan_type}}
+  end
+
+  defp probe_and_store_snapshot(scan_run, product) do
+    case EntityProbe.probe_entity(product) do
+      {:ok, snapshot_data} ->
+        store_snapshot(scan_run, snapshot_data)
+
+      {:error, reason} ->
+        mark_scan_failed(scan_run)
+        {:error, reason}
+    end
+  end
+
+  defp store_snapshot(scan_run, snapshot_data) do
+    case Geo.create_entity_snapshot(scan_run, snapshot_data) do
+      {:ok, snapshot} ->
+        mark_scan_completed(scan_run)
+        {:ok, snapshot}
+
+      {:error, changeset} ->
+        mark_scan_failed(scan_run)
+        {:error, changeset}
+    end
   end
 end

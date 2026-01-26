@@ -2,8 +2,8 @@ defmodule Thevis.ScansTest do
   use Thevis.DataCase
 
   alias Thevis.Scans
-  alias Thevis.Scans.ScanRun
   alias Thevis.Scans.ScanResult
+  alias Thevis.Scans.ScanRun
 
   describe "scan_runs" do
     alias Thevis.Projects.Project

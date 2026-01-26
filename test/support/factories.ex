@@ -9,9 +9,8 @@ defmodule Thevis.Factory do
   alias Thevis.Accounts.Role
   alias Thevis.Accounts.User
   alias Thevis.Geo.EntitySnapshot
-  alias Thevis.Projects.Project
-  alias Thevis.Scans.ScanRun
   alias Thevis.Scans.ScanResult
+  alias Thevis.Scans.ScanRun
 
   def user_factory do
     %User{

@@ -15,13 +15,15 @@ defmodule ThevisWeb.ProjectLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     current_user = socket.assigns[:current_user]
-    {:ok, assign(socket, :current_user, current_user) |> stream(:projects, [])}
+    socket = assign(socket, :current_user, current_user)
+    {:ok, stream(socket, :projects, [])}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
     live_action = socket.assigns.live_action
-    {:noreply, apply_action(socket, live_action, params) |> assign(:live_action, live_action)}
+    socket = apply_action(socket, live_action, params)
+    {:noreply, assign(socket, :live_action, live_action)}
   end
 
   defp apply_action(socket, :index, _params) do
@@ -85,7 +87,8 @@ defmodule ThevisWeb.ProjectLive.Index do
   @impl true
   def handle_event("validate", %{"project" => project_params}, socket) do
     changeset =
-      Project.changeset(socket.assigns.project || %Project{}, project_params)
+      project_params
+      |> Project.changeset(socket.assigns.project || %Project{})
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, form: to_form(changeset, as: "project"))}
@@ -93,40 +96,12 @@ defmodule ThevisWeb.ProjectLive.Index do
 
   @impl true
   def handle_event("save", %{"project" => project_params}, socket) do
-    # Extract product_id
     product_id = project_params["product_id"]
 
-    if product_id && product_id != "" do
-      # Find the product
-      product = Products.get_product!(product_id)
-
-      if product do
-        # Create project for product - ensure all keys are strings
-        attrs =
-          project_params
-          |> Map.put("product_id", product.id)
-
-        case Projects.create_project_for_product(product, attrs) do
-          {:ok, _project} ->
-            {:noreply,
-             socket
-             |> put_flash(:info, "Project created successfully!")
-             |> push_navigate(to: ~p"/projects")}
-
-          {:error, %Ecto.Changeset{} = changeset} ->
-            {:noreply, assign(socket, form: to_form(changeset, as: "project"))}
-        end
-      else
-        {:noreply,
-         socket
-         |> put_flash(:error, "Product not found")
-         |> assign(form: to_form(Project.changeset(%Project{}, project_params), as: "project"))}
-      end
+    if is_nil(product_id) || product_id == "" do
+      handle_save_error(socket, project_params, "Please select a product to optimize")
     else
-      {:noreply,
-       socket
-       |> put_flash(:error, "Please select a product to optimize")
-       |> assign(form: to_form(Project.changeset(%Project{}, project_params), as: "project"))}
+      handle_save_with_product(socket, project_params, product_id)
     end
   end
 
@@ -139,6 +114,7 @@ defmodule ThevisWeb.ProjectLive.Index do
   def handle_event("select_optimizable", %{"project" => project_params}, socket) do
     # Update the form with the selected optimizable_id
     changeset = Project.changeset(socket.assigns.project || %Project{}, project_params)
+
     {:noreply, assign(socket, form: to_form(changeset, as: "project"))}
   end
 
@@ -148,6 +124,39 @@ defmodule ThevisWeb.ProjectLive.Index do
     {:ok, _} = Projects.delete_project(project)
 
     {:noreply, stream_delete(socket, :projects, project)}
+  end
+
+  defp handle_save_with_product(socket, project_params, product_id) do
+    case Products.get_product(product_id) do
+      nil ->
+        handle_save_error(socket, project_params, "Product not found")
+
+      product ->
+        attrs = Map.put(project_params, "product_id", product.id)
+
+        case Projects.create_project_for_product(product, attrs) do
+          {:ok, _project} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "Project created successfully!")
+             |> push_navigate(to: ~p"/projects")}
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            {:noreply, assign(socket, form: to_form(changeset, as: "project"))}
+        end
+    end
+  end
+
+  defp handle_save_error(socket, project_params, error_message) do
+    changeset =
+      %Project{}
+      |> Project.changeset(project_params)
+      |> Ecto.Changeset.add_error(:product_id, error_message)
+
+    {:noreply,
+     socket
+     |> put_flash(:error, error_message)
+     |> assign(form: to_form(changeset, as: "project"))}
   end
 
   defp project_type_badge(:product_launch), do: "bg-red-100 text-red-800"

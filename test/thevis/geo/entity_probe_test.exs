@@ -4,8 +4,6 @@ defmodule Thevis.Geo.EntityProbeTest do
 
   alias Thevis.AI.MockAdapter
   alias Thevis.Geo.EntityProbe
-  alias Thevis.Products.Product
-  alias Thevis.Accounts.Company
 
   # Make sure mocks are verified when the test exits
   setup :verify_on_exit!

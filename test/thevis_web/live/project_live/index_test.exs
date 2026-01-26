@@ -46,7 +46,7 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
 
     test "lists all projects", %{conn: conn, product: product} do
       # Create a project via context
-      {:ok, project} =
+      {:ok, _project} =
         Projects.create_project_for_product(product, %{
           "name" => "Test Project",
           "description" => "Test description",
@@ -98,7 +98,10 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
       projects = Projects.list_projects_by_company(product.company)
       assert length(projects) == 1
 
-      created_project = List.first(projects) |> Thevis.Repo.preload(:product)
+      created_project =
+        projects
+        |> List.first()
+        |> Thevis.Repo.preload(:product)
       assert created_project.name == "UI Created Project"
       assert created_project.description == "Created from UI test"
       assert created_project.project_type == :product_launch
@@ -108,8 +111,8 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
       assert created_project.product_id == product.id
 
       # Verify UI shows the new project
-      {:ok, _index_live, html} = live(conn, ~p"/projects")
-      assert html =~ "UI Created Project"
+      {:ok, _index_live, index_html} = live(conn, ~p"/projects")
+      assert index_html =~ "UI Created Project"
     end
 
     test "validates form fields in real-time", %{conn: conn} do
