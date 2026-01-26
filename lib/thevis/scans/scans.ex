@@ -9,6 +9,7 @@ defmodule Thevis.Scans do
   alias Thevis.Geo
   alias Thevis.Geo.EntityProbe
   alias Thevis.Geo.RecallTest
+  alias Thevis.Jobs
   alias Thevis.Projects
   alias Thevis.Projects.Project
   alias Thevis.Scans.ScanResult
@@ -90,6 +91,53 @@ defmodule Thevis.Scans do
     |> ScanRun.changeset(attrs_with_status)
     |> Repo.insert()
   end
+
+  @doc """
+  Creates a scan run and schedules it for background execution.
+  """
+  def create_and_schedule_scan_run(%Project{} = project, attrs \\ %{}) do
+    case create_scan_run(project, attrs) do
+      {:ok, scan_run} ->
+        # Schedule the scan execution as a background job
+        schedule_scan_execution(scan_run)
+        {:ok, scan_run}
+
+      error ->
+        error
+    end
+  end
+
+  defp schedule_scan_execution(%ScanRun{} = scan_run) do
+    case %{"scan_run_id" => scan_run.id}
+         |> Jobs.ScanExecution.new()
+         |> Oban.insert() do
+      {:ok, _job} -> :ok
+      {:error, _reason} -> :ok
+    end
+  end
+
+  @doc """
+  Schedules a recurring scan for a project based on its scan frequency.
+  Only schedules if project is active.
+  """
+  def schedule_recurring_scan(%Project{} = project) do
+    if project.status == :active do
+      schedule_time = calculate_next_scan_time(project.scan_frequency)
+
+      case %{"project_id" => project.id, "scan_type" => "entity_probe"}
+           |> Jobs.ScanExecution.new(schedule_in: schedule_time)
+           |> Oban.insert() do
+        {:ok, _job} -> :ok
+        {:error, _reason} -> :ok
+      end
+    else
+      {:error, :project_not_active}
+    end
+  end
+
+  defp calculate_next_scan_time(:daily), do: 24 * 60 * 60
+  defp calculate_next_scan_time(:weekly), do: 7 * 24 * 60 * 60
+  defp calculate_next_scan_time(:monthly), do: 30 * 24 * 60 * 60
 
   @doc """
   Updates a scan run.

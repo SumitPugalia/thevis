@@ -10,10 +10,9 @@ defmodule Thevis.Application do
     children = [
       ThevisWeb.Telemetry,
       Thevis.Repo,
+      {Oban, Application.get_env(:thevis, Oban)},
       {DNSCluster, query: Application.get_env(:thevis, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Thevis.PubSub},
-      # Start a worker by calling: Thevis.Worker.start_link(arg)
-      # {Thevis.Worker, arg},
       # Start to serve requests, typically the last entry
       ThevisWeb.Endpoint
     ]

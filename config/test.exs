@@ -32,6 +32,14 @@ config :logger, level: :warning
 # Configure AI adapter to use mock in tests
 config :thevis, Thevis.AI, adapter: Thevis.AI.MockAdapter
 
+# Oban configuration for tests
+config :thevis, Oban,
+  engine: Oban.Engines.Inline,
+  queues: false,
+  repo: Thevis.Repo,
+  plugins: false,
+  peer: false
+
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
 

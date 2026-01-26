@@ -78,6 +78,12 @@ config :thevis, Thevis.AI,
   model: "gpt-4o-mini",
   embedding_model: "text-embedding-3-small"
 
+# Oban configuration
+config :thevis, Oban,
+  engine: Oban.Engines.Basic,
+  queues: [default: 10, scans: 10, reports: 5],
+  repo: Thevis.Repo
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
