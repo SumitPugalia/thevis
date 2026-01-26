@@ -27,7 +27,7 @@ config :thevis, Thevis.Mailer, adapter: Swoosh.Adapters.Test
 config :swoosh, :api_client, false
 
 # Print only warnings and errors during test
-config :logger, level: :warn
+config :logger, level: :warning
 
 # Configure AI adapter to use mock in tests
 config :thevis, Thevis.AI, adapter: Thevis.AI.MockAdaptering

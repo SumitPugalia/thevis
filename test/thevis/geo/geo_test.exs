@@ -5,8 +5,6 @@ defmodule Thevis.GeoTest do
   alias Thevis.Geo.EntitySnapshot
 
   describe "entity_snapshots" do
-    alias Thevis.Scans.ScanRun
-
     @valid_attrs %{
       optimizable_type: :product,
       optimizable_id: Ecto.UUID.generate(),

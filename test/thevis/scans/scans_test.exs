@@ -6,8 +6,6 @@ defmodule Thevis.ScansTest do
   alias Thevis.Scans.ScanRun
 
   describe "scan_runs" do
-    alias Thevis.Projects.Project
-
     @valid_attrs %{
       status: :pending,
       scan_type: :entity_probe
@@ -69,7 +67,13 @@ defmodule Thevis.ScansTest do
     test "update_scan_run/2 with invalid data returns error changeset", %{project: project} do
       scan_run = insert(:scan_run, project: project)
       assert {:error, %Ecto.Changeset{}} = Scans.update_scan_run(scan_run, @invalid_attrs)
-      assert scan_run == Scans.get_scan_run!(scan_run.id)
+
+      # Compare only the relevant fields, not preloaded associations
+      fetched_scan_run = Scans.get_scan_run!(scan_run.id)
+      assert scan_run.id == fetched_scan_run.id
+      assert scan_run.status == fetched_scan_run.status
+      assert scan_run.scan_type == fetched_scan_run.scan_type
+      assert scan_run.project_id == fetched_scan_run.project_id
     end
 
     test "delete_scan_run/1 deletes the scan run", %{project: project} do

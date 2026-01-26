@@ -102,6 +102,7 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
         projects
         |> List.first()
         |> Thevis.Repo.preload(:product)
+
       assert created_project.name == "UI Created Project"
       assert created_project.description == "Created from UI test"
       assert created_project.project_type == :product_launch
@@ -284,13 +285,14 @@ defmodule ThevisWeb.ProjectLive.IndexTest do
       assert_redirect(index_live, ~p"/projects/#{project.id}")
     end
 
-    test "requires authentication", %{conn: conn} do
-      # Routes now require authentication
-      unauthenticated_conn = delete_session(conn, "guardian_default_token")
+    test "requires authentication" do
+      # Routes now require authentication - create a fresh unauthenticated conn
+      unauthenticated_conn = build_conn()
 
-      assert_raise Phoenix.LiveView.UnauthorizedError, fn ->
-        live(unauthenticated_conn, ~p"/projects")
-      end
+      # Guardian redirects unauthenticated users to /login
+      # Test that accessing the route redirects (not using live/2 since it handles redirects)
+      conn = get(unauthenticated_conn, ~p"/projects")
+      assert redirected_to(conn) == ~p"/login"
     end
   end
 end

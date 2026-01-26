@@ -86,9 +86,11 @@ defmodule ThevisWeb.ProjectLive.Index do
 
   @impl true
   def handle_event("validate", %{"project" => project_params}, socket) do
+    project = socket.assigns.project || %Project{}
+
     changeset =
-      project_params
-      |> Project.changeset(socket.assigns.project || %Project{})
+      project
+      |> Project.changeset(project_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, form: to_form(changeset, as: "project"))}

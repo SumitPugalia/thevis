@@ -90,7 +90,10 @@ defmodule Thevis.ProjectsTest do
 
       projects = Projects.list_projects_for_product(product)
       assert length(projects) == 2
-      assert project1 in projects
+
+      # Compare by ID since preloaded associations may differ
+      project_ids = Enum.map(projects, & &1.id)
+      assert project1.id in project_ids
     end
   end
 
@@ -174,7 +177,13 @@ defmodule Thevis.ProjectsTest do
 
     test "update_project/2 with invalid data returns error changeset", %{project: project} do
       assert {:error, %Ecto.Changeset{}} = Projects.update_project(project, @invalid_attrs)
-      assert project == Projects.get_project!(project.id)
+
+      # Compare only the relevant fields, not preloaded associations
+      fetched_project = Projects.get_project!(project.id)
+      assert project.id == fetched_project.id
+      assert project.name == fetched_project.name
+      assert project.status == fetched_project.status
+      assert project.project_type == fetched_project.project_type
     end
   end
 
