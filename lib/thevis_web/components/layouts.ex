@@ -28,6 +28,7 @@ defmodule ThevisWeb.Layouts do
   attr :flash, :map, required: true, doc: "the map of flash messages"
 
   attr :current_user, :any, default: nil, doc: "the current authenticated user"
+  attr :page_title, :string, default: nil, doc: "the page title"
 
   attr :current_scope, :map,
     default: nil,
