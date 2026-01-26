@@ -53,6 +53,10 @@ defmodule ThevisWeb.Router do
 
     live "/dashboard", ClientDashboardLive, :index
     live "/onboarding", ClientOnboardingLive, :index
+
+    # Client-accessible scan routes
+    live "/projects/:id/scans", ScanLive.Index, :index
+    live "/projects/:id/scans/:scan_run_id", ScanLive.Show, :show
   end
 
   # Admin/Consultant routes (for now, no auth - will add later)
@@ -74,6 +78,8 @@ defmodule ThevisWeb.Router do
     live "/projects/new", ProjectLive.Index, :new
     live "/projects/:id", ProjectLive.Show, :show
     live "/projects/:id/edit", ProjectLive.Index, :edit
+    live "/projects/:id/scans", ScanLive.Index, :index
+    live "/projects/:id/scans/:scan_run_id", ScanLive.Show, :show
   end
 
   # Other scopes may use custom stacks.

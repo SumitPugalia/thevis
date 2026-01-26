@@ -71,6 +71,13 @@ config :thevis, Thevis.Guardian,
        "ThPFmobEq82lpWytbAOyoakQEihAAOhDdMXgLrBz7YEeVNsOGNMSe//0Z8vh2QG"
      ]}
 
+# AI/LLM configuration
+config :thevis, Thevis.AI,
+  adapter: Thevis.AI.OpenAIAdapter,
+  api_key: {System, :get_env, ["OPENAI_API_KEY"]},
+  model: "gpt-4o-mini",
+  embedding_model: "text-embedding-3-small"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

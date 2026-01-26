@@ -8,6 +8,10 @@ defmodule Thevis.Factory do
   alias Thevis.Accounts.Company
   alias Thevis.Accounts.Role
   alias Thevis.Accounts.User
+  alias Thevis.Geo.EntitySnapshot
+  alias Thevis.Projects.Project
+  alias Thevis.Scans.ScanRun
+  alias Thevis.Scans.ScanResult
 
   def user_factory do
     %User{
@@ -103,6 +107,8 @@ defmodule Thevis.Factory do
   end
 
   def project_factory do
+    product = insert(:product)
+
     %Thevis.Projects.Project{
       name: sequence(:name, &"Project #{&1}"),
       description: "A test project",
@@ -111,12 +117,13 @@ defmodule Thevis.Factory do
       project_type: :ongoing_monitoring,
       urgency_level: :standard,
       is_category_project: false,
-      optimizable_type: :product,
-      optimizable_id: Ecto.UUID.generate()
+      product: product
     }
   end
 
   def product_launch_project_factory do
+    product = insert(:product)
+
     %Thevis.Projects.Project{
       name: sequence(:name, &"Launch Project #{&1}"),
       description: "A product launch project",
@@ -125,8 +132,53 @@ defmodule Thevis.Factory do
       project_type: :product_launch,
       urgency_level: :critical,
       is_category_project: false,
+      product: product
+    }
+  end
+
+  def product_project_factory do
+    product = insert(:product)
+
+    %Thevis.Projects.Project{
+      name: sequence(:name, &"Product Project #{&1}"),
+      description: "A project for a product",
+      status: :active,
+      scan_frequency: :weekly,
+      project_type: :ongoing_monitoring,
+      urgency_level: :standard,
+      is_category_project: false,
+      product: product
+    }
+  end
+
+  def scan_run_factory do
+    %ScanRun{
+      project: build(:product_project),
+      status: :pending,
+      scan_type: :entity_probe
+    }
+  end
+
+  def scan_result_factory do
+    %ScanResult{
+      scan_run: build(:scan_run),
+      result_type: "entity_probe",
+      data: %{},
+      metrics: %{}
+    }
+  end
+
+  def entity_snapshot_factory do
+    product = insert(:product)
+
+    %EntitySnapshot{
+      scan_run: build(:scan_run),
       optimizable_type: :product,
-      optimizable_id: Ecto.UUID.generate()
+      optimizable_id: product.id,
+      ai_description: "A test product description from AI",
+      confidence_score: 0.85,
+      source_llm: "gpt-4o-mini",
+      prompt_template: "product_probe"
     }
   end
 end

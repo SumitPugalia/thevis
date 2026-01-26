@@ -7,19 +7,23 @@ defmodule ThevisWeb.ProjectLive.Show do
 
   alias Thevis.Projects
 
+  on_mount {ThevisWeb.Live.Hooks.AssignCurrentUser, :assign_current_user}
+
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    current_user = socket.assigns[:current_user]
+    {:ok, assign(socket, :current_user, current_user)}
   end
 
   @impl true
   def handle_params(%{"id" => id}, _url, socket) do
-    project = Projects.get_project!(id)
+    project = Projects.get_project!(id) |> Thevis.Repo.preload(:product)
 
     {:noreply,
      socket
      |> assign(:page_title, project.name)
-     |> assign(:project, project)}
+     |> assign(:project, project)
+     |> assign(:current_user, socket.assigns[:current_user])}
   end
 
   @impl true
@@ -32,12 +36,20 @@ defmodule ThevisWeb.ProjectLive.Show do
             <h1 class="text-3xl font-bold text-gray-900">{@project.name}</h1>
             <p class="mt-2 text-sm text-gray-600">{@project.description || "-"}</p>
           </div>
-          <.link
-            navigate={~p"/admin/projects/#{@project.id}/edit"}
-            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <.icon name="hero-pencil" class="w-5 h-5" /> Edit
-          </.link>
+          <div class="flex gap-3">
+            <.link
+              navigate={~p"/admin/projects/#{@project.id}/scans"}
+              class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <.icon name="hero-magnifying-glass" class="w-5 h-5" /> View Scans
+            </.link>
+            <.link
+              navigate={~p"/admin/projects/#{@project.id}/edit"}
+              class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <.icon name="hero-pencil" class="w-5 h-5" /> Edit
+            </.link>
+          </div>
         </div>
 
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
@@ -59,9 +71,9 @@ defmodule ThevisWeb.ProjectLive.Show do
               </dd>
             </div>
             <div>
-              <dt class="text-sm font-medium text-gray-500">Optimizes</dt>
+              <dt class="text-sm font-medium text-gray-500">Product</dt>
               <dd class="mt-1 text-sm text-gray-900">
-                {String.capitalize(to_string(@project.optimizable_type))}
+                {if @project.product, do: @project.product.name, else: "-"}
               </dd>
             </div>
             <div>

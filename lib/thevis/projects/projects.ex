@@ -1,7 +1,7 @@
 defmodule Thevis.Projects do
   @moduledoc """
   The Projects context for project management.
-  Projects are polymorphic - they can optimize products or services.
+  Projects optimize products.
   """
 
   import Ecto.Query, warn: false
@@ -24,27 +24,13 @@ defmodule Thevis.Projects do
   """
   def list_projects_for_product(%Product{} = product) do
     Project
-    |> where([p], p.optimizable_type == :product and p.optimizable_id == ^product.id)
+    |> where([p], p.product_id == ^product.id)
+    |> preload(:product)
     |> Repo.all()
   end
 
   @doc """
-  Returns the list of projects for a service (company).
-
-  ## Examples
-
-      iex> list_projects_for_service(company)
-      [%Project{}, ...]
-
-  """
-  def list_projects_for_service(%Company{} = company) do
-    Project
-    |> where([p], p.optimizable_type == :service and p.optimizable_id == ^company.id)
-    |> Repo.all()
-  end
-
-  @doc """
-  Returns all projects for a company (both product and service projects).
+  Returns all projects for a company (all products and their projects).
 
   ## Examples
 
@@ -53,20 +39,14 @@ defmodule Thevis.Projects do
 
   """
   def list_projects_by_company(%Company{} = company) do
-    # For product-based companies, get all products and their projects
-    # For service-based companies, get service projects directly
-    if company.company_type == :product_based do
-      # Get all products for this company, then get their projects
-      products = Thevis.Products.list_products(company)
-      product_ids = Enum.map(products, & &1.id)
+    # Get all products for this company, then get their projects
+    products = Thevis.Products.list_products(company)
+    product_ids = Enum.map(products, & &1.id)
 
-      Project
-      |> where([p], p.optimizable_type == :product and p.optimizable_id in ^product_ids)
-      |> Repo.all()
-    else
-      # Service-based company - get service projects directly
-      list_projects_for_service(company)
-    end
+    Project
+    |> where([p], p.product_id in ^product_ids)
+    |> preload(:product)
+    |> Repo.all()
   end
 
   @doc """
@@ -83,7 +63,11 @@ defmodule Thevis.Projects do
       nil
 
   """
-  def get_project(id), do: Repo.get(Project, id)
+  def get_project(id) do
+    Project
+    |> preload(:product)
+    |> Repo.get(id)
+  end
 
   @doc """
   Gets a single project.
@@ -99,7 +83,11 @@ defmodule Thevis.Projects do
       ** (Ecto.NoResultsError)
 
   """
-  def get_project!(id), do: Repo.get!(Project, id)
+  def get_project!(id) do
+    Project
+    |> preload(:product)
+    |> Repo.get!(id)
+  end
 
   @doc """
   Creates a project for a product.
@@ -114,36 +102,16 @@ defmodule Thevis.Projects do
 
   """
   def create_project_for_product(%Product{} = product, attrs \\ %{}) do
+    # Ensure all keys are strings to avoid mixed key errors
+    attrs_string_keys =
+      attrs
+      |> Enum.map(fn {k, v} -> {to_string(k), v} end)
+      |> Enum.into(%{})
+
+    attrs_with_product = Map.put(attrs_string_keys, "product_id", product.id)
+
     %Project{}
-    |> Project.changeset(
-      Map.merge(attrs, %{
-        optimizable_type: :product,
-        optimizable_id: product.id
-      })
-    )
-    |> Repo.insert()
-  end
-
-  @doc """
-  Creates a project for a service (company).
-
-  ## Examples
-
-      iex> create_project_for_service(company, %{field: value})
-      {:ok, %Project{}}
-
-      iex> create_project_for_service(company, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_project_for_service(%Company{} = company, attrs \\ %{}) do
-    %Project{}
-    |> Project.changeset(
-      Map.merge(attrs, %{
-        optimizable_type: :service,
-        optimizable_id: company.id
-      })
-    )
+    |> Project.changeset(attrs_with_product)
     |> Repo.insert()
   end
 
@@ -179,5 +147,18 @@ defmodule Thevis.Projects do
   """
   def delete_project(%Project{} = project) do
     Repo.delete(project)
+  end
+
+  @doc """
+  Gets the product for a project.
+
+  ## Examples
+
+      iex> get_product_for_project(project)
+      %Product{}
+
+  """
+  def get_product_for_project(%Project{} = project) do
+    Thevis.Repo.preload(project, :product).product
   end
 end

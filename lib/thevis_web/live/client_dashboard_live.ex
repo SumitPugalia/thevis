@@ -6,7 +6,10 @@ defmodule ThevisWeb.ClientDashboardLive do
   use ThevisWeb, :live_view
 
   alias Thevis.Accounts
+  alias Thevis.Geo
   alias Thevis.Products
+  alias Thevis.Projects
+  alias Thevis.Scans
   alias Thevis.Services
 
   on_mount {ThevisWeb.Live.Hooks.AssignCurrentUser, :assign_current_user}
@@ -64,11 +67,36 @@ defmodule ThevisWeb.ClientDashboardLive do
       services =
         if company.company_type == :service_based, do: Services.list_services(company), else: []
 
+      # Get projects for this company
+      projects = Projects.list_projects_by_company(company)
+
+      # Get latest scan results for each project
+      projects_with_scans =
+        Enum.map(projects, fn project ->
+          latest_scan_run =
+            Scans.list_scan_runs(project)
+            |> List.first()
+
+          latest_snapshot =
+            if latest_scan_run do
+              Geo.list_entity_snapshots(latest_scan_run) |> List.first()
+            else
+              nil
+            end
+
+          Map.merge(project, %{
+            latest_scan_run: latest_scan_run,
+            latest_snapshot: latest_snapshot
+          })
+        end)
+
       Map.merge(company, %{
         products: products,
         services: services,
         products_count: length(products),
-        services_count: length(services)
+        services_count: length(services),
+        projects: projects_with_scans,
+        projects_count: length(projects_with_scans)
       })
     end)
   end
@@ -186,6 +214,123 @@ defmodule ThevisWeb.ClientDashboardLive do
                     <% end %>
                   </div>
                 <% end %>
+                
+    <!-- Projects Section -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                  <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-sm font-medium text-gray-700">
+                      Projects ({company.projects_count})
+                    </h4>
+                    <%= if company.company_type == :product_based && company.products_count > 0 do %>
+                      <.link
+                        navigate={~p"/admin/projects/new"}
+                        class="text-xs text-blue-600 hover:text-blue-900 font-medium"
+                      >
+                        + Create Project
+                      </.link>
+                    <% end %>
+                  </div>
+
+                  <%= if company.projects_count > 0 do %>
+                    <div class="space-y-3">
+                      <div
+                        :for={project <- company.projects}
+                        class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200"
+                      >
+                        <div class="flex items-start justify-between">
+                          <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                              <h5 class="font-medium text-gray-900">{project.name}</h5>
+                              <span class={[
+                                "px-2 py-0.5 text-xs font-semibold rounded-full",
+                                project_status_badge(project.status)
+                              ]}>
+                                {String.capitalize(Atom.to_string(project.status))}
+                              </span>
+                            </div>
+                            <p class="text-xs text-gray-600 mb-3">
+                              {project.description || "No description"}
+                            </p>
+
+                            <%= if project.latest_snapshot do %>
+                              <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                  <span class="text-xs font-medium text-gray-700">
+                                    AI Recognition Confidence
+                                  </span>
+                                  <span class={[
+                                    "text-sm font-bold",
+                                    confidence_color(project.latest_snapshot.confidence_score)
+                                  ]}>
+                                    {Float.round(project.latest_snapshot.confidence_score * 100, 1)}%
+                                  </span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                  <div
+                                    class={[
+                                      "h-2 rounded-full transition-all",
+                                      if(project.latest_snapshot.confidence_score >= 0.8,
+                                        do: "bg-green-500",
+                                        else:
+                                          if(project.latest_snapshot.confidence_score >= 0.5,
+                                            do: "bg-yellow-500",
+                                            else: "bg-red-500"
+                                          )
+                                      )
+                                    ]}
+                                    style={"width: #{Float.round(project.latest_snapshot.confidence_score * 100, 1)}%"}
+                                  >
+                                  </div>
+                                </div>
+                                <p class="text-xs text-gray-500 line-clamp-2">
+                                  {String.slice(project.latest_snapshot.ai_description, 0..100)}...
+                                </p>
+                              </div>
+                            <% else %>
+                              <p class="text-xs text-gray-500 italic">No scan results yet</p>
+                            <% end %>
+                          </div>
+                          <div class="ml-4 flex flex-col gap-2 items-end">
+                            <.link
+                              navigate={~p"/projects/#{project.id}/scans"}
+                              class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-900 font-medium px-2 py-1 rounded hover:bg-blue-50"
+                            >
+                              <.icon name="hero-magnifying-glass" class="w-4 h-4" /> View Scans
+                            </.link>
+                            <%= if project.latest_scan_run do %>
+                              <.link
+                                navigate={
+                                  ~p"/projects/#{project.id}/scans/#{project.latest_scan_run.id}"
+                                }
+                                class="inline-flex items-center gap-1 text-xs text-purple-600 hover:text-purple-900 font-medium px-2 py-1 rounded hover:bg-purple-50"
+                              >
+                                <.icon name="hero-chart-bar" class="w-4 h-4" /> Latest Results
+                              </.link>
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  <% else %>
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 border-dashed">
+                      <p class="text-xs text-gray-500 text-center mb-2">
+                        No projects yet. Create a project to start scanning your products.
+                      </p>
+                      <%= if company.company_type == :product_based && company.products_count > 0 do %>
+                        <.link
+                          navigate={~p"/admin/projects/new"}
+                          class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-900 font-medium mx-auto"
+                        >
+                          <.icon name="hero-plus-circle" class="w-4 h-4" /> Create Your First Project
+                        </.link>
+                      <% else %>
+                        <p class="text-xs text-gray-400 text-center">
+                          Add products first to create projects
+                        </p>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
               </div>
             </div>
           <% end %>
@@ -484,4 +629,12 @@ defmodule ThevisWeb.ClientDashboardLive do
         {:noreply, assign(socket, service_form: to_form(changeset, as: "service"))}
     end
   end
+
+  defp project_status_badge(:active), do: "bg-green-100 text-green-800"
+  defp project_status_badge(:paused), do: "bg-yellow-100 text-yellow-800"
+  defp project_status_badge(:archived), do: "bg-gray-100 text-gray-800"
+
+  defp confidence_color(confidence) when confidence >= 0.8, do: "text-green-600"
+  defp confidence_color(confidence) when confidence >= 0.5, do: "text-yellow-600"
+  defp confidence_color(_confidence), do: "text-red-600"
 end

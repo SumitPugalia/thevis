@@ -1,11 +1,12 @@
 defmodule Thevis.Projects.Project do
   @moduledoc """
-  Project schema with polymorphic associations.
-  Projects can optimize products or services (companies).
+  Project schema - projects optimize products.
   """
 
   use Ecto.Schema
   import Ecto.Changeset
+
+  alias Thevis.Products.Product
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -18,8 +19,8 @@ defmodule Thevis.Projects.Project do
     field :project_type, Ecto.Enum, values: [:product_launch, :ongoing_monitoring, :audit_only]
     field :urgency_level, Ecto.Enum, values: [:standard, :high, :critical]
     field :is_category_project, :boolean, default: false
-    field :optimizable_type, Ecto.Enum, values: [:product, :service]
-    field :optimizable_id, :binary_id
+
+    belongs_to :product, Product
 
     timestamps(type: :utc_datetime_usec)
   end
@@ -35,8 +36,7 @@ defmodule Thevis.Projects.Project do
       :project_type,
       :urgency_level,
       :is_category_project,
-      :optimizable_type,
-      :optimizable_id
+      :product_id
     ])
     |> validate_required([
       :name,
@@ -44,12 +44,12 @@ defmodule Thevis.Projects.Project do
       :scan_frequency,
       :project_type,
       :urgency_level,
-      :optimizable_type,
-      :optimizable_id
+      :product_id
     ])
     |> validate_length(:name, min: 1, max: 255)
     |> validate_inclusion(:status, [:active, :paused, :archived])
     |> validate_inclusion(:project_type, [:product_launch, :ongoing_monitoring, :audit_only])
     |> validate_inclusion(:urgency_level, [:standard, :high, :critical])
+    |> foreign_key_constraint(:product_id)
   end
 end
