@@ -8,10 +8,12 @@ defmodule Thevis.Scans do
 
   alias Thevis.Geo
   alias Thevis.Geo.EntityProbe
+  alias Thevis.Geo.RecallScorer
   alias Thevis.Geo.RecallTest
   alias Thevis.Jobs
   alias Thevis.Projects
   alias Thevis.Projects.Project
+  alias Thevis.Reports.GeoScore
   alias Thevis.Scans.ScanResult
   alias Thevis.Scans.ScanRun
 
@@ -315,6 +317,53 @@ defmodule Thevis.Scans do
       nil -> []
       latest_scan_run -> list_scan_results(latest_scan_run)
     end
+  end
+
+  @doc """
+  Returns GEO metrics (GEO Score, recall %, first mention rank) from the latest completed scan run.
+
+  Used by client dashboard and project show to display GEO Audit metrics per PRD.
+  Returns nil when the project has no completed scan run.
+  """
+  @spec get_geo_metrics(Project.t()) ::
+          %{
+            geo_score: float(),
+            recall_percentage: float(),
+            avg_mention_rank: number() | nil,
+            entity_snapshot: Thevis.Geo.EntitySnapshot.t() | nil,
+            latest_scan_run: ScanRun.t()
+          }
+          | nil
+  def get_geo_metrics(%Project{} = project) do
+    scan_run = get_latest_completed_scan_run(project)
+    if scan_run, do: compute_geo_metrics(scan_run), else: nil
+  end
+
+  defp get_latest_completed_scan_run(%Project{} = project) do
+    ScanRun
+    |> where([s], s.project_id == ^project.id)
+    |> where([s], s.status == :completed)
+    |> order_by([s], desc: s.completed_at)
+    |> limit(1)
+    |> preload([s], [:project, :scan_results])
+    |> Repo.one()
+  end
+
+  defp compute_geo_metrics(scan_run) do
+    snapshots = Geo.list_entity_snapshots(scan_run)
+    recall_results = Geo.list_recall_results(scan_run)
+    entity_snapshot = List.first(snapshots)
+    geo_score = GeoScore.calculate_geo_score(entity_snapshot, recall_results)
+    recall_percentage = RecallScorer.calculate_recall_percentage(recall_results)
+    avg_mention_rank = RecallScorer.calculate_first_mention_rank(recall_results)
+
+    %{
+      geo_score: geo_score,
+      recall_percentage: recall_percentage,
+      avg_mention_rank: avg_mention_rank,
+      entity_snapshot: entity_snapshot,
+      latest_scan_run: scan_run
+    }
   end
 
   @doc """

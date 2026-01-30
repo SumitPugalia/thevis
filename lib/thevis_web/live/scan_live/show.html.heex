@@ -5,12 +5,23 @@
         <h1 class="text-3xl font-bold text-gray-900">Scan Details</h1>
         <p class="mt-2 text-sm text-gray-600">Project: {@project.name}</p>
       </div>
-      <.link
-        navigate={~p"/projects/#{@project.id}/scans"}
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
-      >
-        <.icon name="hero-arrow-left" class="w-5 h-5" /> Back to Scans
-      </.link>
+      <div class="flex gap-2">
+        <%= if @scan_run.status == :completed do %>
+          <a
+            href={~p"/projects/#{@project.id}/report/#{@scan_run.id}"}
+            download
+            class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition-colors"
+          >
+            <.icon name="hero-document-arrow-down" class="w-5 h-5" /> Export PDF
+          </a>
+        <% end %>
+        <.link
+          navigate={~p"/projects/#{@project.id}/scans"}
+          class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          <.icon name="hero-arrow-left" class="w-5 h-5" /> Back to Scans
+        </.link>
+      </div>
     </div>
     
 <!-- Scan Run Info -->

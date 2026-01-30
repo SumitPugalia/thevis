@@ -77,6 +77,10 @@ defmodule ThevisWeb.Router do
     live "/projects/:id/edit", ProjectLive.Index, :edit
     live "/projects/:id/scans", ScanLive.Index, :index
     live "/projects/:id/scans/:scan_run_id", ScanLive.Show, :show
+
+    # Client report download (PRD 5.1.5 Exportable Audit Report)
+    get "/projects/:project_id/report", ReportController, :download
+    get "/projects/:project_id/report/:scan_run_id", ReportController, :download
   end
 
   # Admin routes (consultant/admin only)

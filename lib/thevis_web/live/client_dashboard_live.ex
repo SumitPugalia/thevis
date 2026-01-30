@@ -52,10 +52,12 @@ defmodule ThevisWeb.ClientDashboardLive do
       |> List.first()
 
     latest_snapshot = get_latest_snapshot(latest_scan_run)
+    geo_metrics = Scans.get_geo_metrics(project)
 
     Map.merge(project, %{
       latest_scan_run: latest_scan_run,
-      latest_snapshot: latest_snapshot
+      latest_snapshot: latest_snapshot,
+      geo_metrics: geo_metrics
     })
   end
 
@@ -293,42 +295,87 @@ defmodule ThevisWeb.ClientDashboardLive do
                               {project.description || "No description"}
                             </p>
 
-                            <%= if project.latest_snapshot do %>
+                            <%= if project.geo_metrics do %>
                               <div class="space-y-2">
                                 <div class="flex items-center justify-between">
-                                  <span class="text-xs font-medium text-gray-700">
-                                    AI Recognition Confidence
-                                  </span>
+                                  <span class="text-xs font-medium text-gray-700">GEO Score</span>
                                   <span class={[
                                     "text-sm font-bold",
-                                    confidence_color(project.latest_snapshot.confidence_score)
+                                    geo_score_color(project.geo_metrics.geo_score)
                                   ]}>
-                                    {Float.round(project.latest_snapshot.confidence_score * 100, 1)}%
+                                    {Float.round(project.geo_metrics.geo_score, 1)}/100
                                   </span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
                                   <div
                                     class={[
                                       "h-2 rounded-full transition-all",
-                                      if(project.latest_snapshot.confidence_score >= 0.8,
-                                        do: "bg-green-500",
-                                        else:
-                                          if(project.latest_snapshot.confidence_score >= 0.5,
-                                            do: "bg-yellow-500",
-                                            else: "bg-red-500"
-                                          )
-                                      )
+                                      geo_score_bar_class(project.geo_metrics.geo_score)
                                     ]}
-                                    style={"width: #{Float.round(project.latest_snapshot.confidence_score * 100, 1)}%"}
+                                    style={"width: #{min(Float.round(project.geo_metrics.geo_score, 1), 100)}%"}
                                   >
                                   </div>
                                 </div>
-                                <p class="text-xs text-gray-500 line-clamp-2">
-                                  {String.slice(project.latest_snapshot.ai_description, 0..100)}...
-                                </p>
+                                <div class="flex gap-3 text-xs text-gray-600">
+                                  <span>
+                                    Recall: {Float.round(project.geo_metrics.recall_percentage, 1)}%
+                                  </span>
+                                  <%= if project.geo_metrics.avg_mention_rank do %>
+                                    <span>
+                                      First mention: #{Float.round(
+                                        project.geo_metrics.avg_mention_rank,
+                                        1
+                                      )}
+                                    </span>
+                                  <% end %>
+                                </div>
+                                <%= if project.geo_metrics.entity_snapshot && project.geo_metrics.entity_snapshot.ai_description do %>
+                                  <p class="text-xs text-gray-500 line-clamp-2">
+                                    {String.slice(
+                                      project.geo_metrics.entity_snapshot.ai_description,
+                                      0..100
+                                    )}...
+                                  </p>
+                                <% end %>
                               </div>
                             <% else %>
-                              <p class="text-xs text-gray-500 italic">No scan results yet</p>
+                              <%= if project.latest_snapshot do %>
+                                <div class="space-y-2">
+                                  <div class="flex items-center justify-between">
+                                    <span class="text-xs font-medium text-gray-700">
+                                      AI Recognition Confidence
+                                    </span>
+                                    <span class={[
+                                      "text-sm font-bold",
+                                      confidence_color(project.latest_snapshot.confidence_score)
+                                    ]}>
+                                      {Float.round(project.latest_snapshot.confidence_score * 100, 1)}%
+                                    </span>
+                                  </div>
+                                  <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                      class={[
+                                        "h-2 rounded-full transition-all",
+                                        if(project.latest_snapshot.confidence_score >= 0.8,
+                                          do: "bg-green-500",
+                                          else:
+                                            if(project.latest_snapshot.confidence_score >= 0.5,
+                                              do: "bg-yellow-500",
+                                              else: "bg-red-500"
+                                            )
+                                        )
+                                      ]}
+                                      style={"width: #{Float.round(project.latest_snapshot.confidence_score * 100, 1)}%"}
+                                    >
+                                    </div>
+                                  </div>
+                                  <p class="text-xs text-gray-500 line-clamp-2">
+                                    {String.slice(project.latest_snapshot.ai_description, 0..100)}...
+                                  </p>
+                                </div>
+                              <% else %>
+                                <p class="text-xs text-gray-500 italic">No scan results yet</p>
+                              <% end %>
                             <% end %>
                           </div>
                           <div class="ml-4 flex flex-col gap-2 items-end">
@@ -347,6 +394,15 @@ defmodule ThevisWeb.ClientDashboardLive do
                               >
                                 <.icon name="hero-chart-bar" class="w-4 h-4" /> Latest Results
                               </.link>
+                            <% end %>
+                            <%= if project.geo_metrics do %>
+                              <a
+                                href={~p"/projects/#{project.id}/report"}
+                                download
+                                class="inline-flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-900 font-medium px-2 py-1 rounded hover:bg-emerald-50"
+                              >
+                                <.icon name="hero-document-arrow-down" class="w-4 h-4" /> Export PDF
+                              </a>
                             <% end %>
                           </div>
                         </div>
@@ -696,6 +752,16 @@ defmodule ThevisWeb.ClientDashboardLive do
   defp confidence_color(confidence) when confidence >= 0.8, do: "text-green-600"
   defp confidence_color(confidence) when confidence >= 0.5, do: "text-yellow-600"
   defp confidence_color(_confidence), do: "text-red-600"
+
+  defp geo_score_color(score) when score >= 80, do: "text-green-600"
+  defp geo_score_color(score) when score >= 60, do: "text-green-500"
+  defp geo_score_color(score) when score >= 40, do: "text-yellow-600"
+  defp geo_score_color(_score), do: "text-red-600"
+
+  defp geo_score_bar_class(score) when score >= 80, do: "bg-green-500"
+  defp geo_score_bar_class(score) when score >= 60, do: "bg-green-400"
+  defp geo_score_bar_class(score) when score >= 40, do: "bg-yellow-500"
+  defp geo_score_bar_class(_score), do: "bg-red-500"
 
   defp has_chart_data?(companies) do
     Enum.any?(companies, fn company -> company.confidence_history != [] end)
