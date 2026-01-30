@@ -323,6 +323,8 @@ defmodule Thevis.Geo.Automation.WikiManager do
     end
   end
 
+  # Req returns headers as map; list clause kept for other callers (e.g. raw HTTP).
+  @dialyzer {:nowarn_function, get_cookie_from_headers: 1}
   defp get_cookie_from_headers(headers) when is_map(headers) do
     cookie_val = Map.get(headers, "set-cookie") || Map.get(headers, "Set-Cookie")
 

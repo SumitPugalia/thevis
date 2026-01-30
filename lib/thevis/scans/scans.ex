@@ -281,6 +281,26 @@ defmodule Thevis.Scans do
   end
 
   @doc """
+  Gets the latest scan run for a project (most recent by inserted_at).
+
+  ## Examples
+
+      iex> get_latest_scan_run(project)
+      %ScanRun{}
+
+      iex> get_latest_scan_run(project_with_no_scans)
+      nil
+
+  """
+  def get_latest_scan_run(%Project{} = project) do
+    ScanRun
+    |> where([s], s.project_id == ^project.id)
+    |> order_by([s], desc: s.inserted_at)
+    |> limit(1)
+    |> Repo.one()
+  end
+
+  @doc """
   Gets the latest scan results for a project.
 
   ## Examples
@@ -290,18 +310,9 @@ defmodule Thevis.Scans do
 
   """
   def get_latest_results(%Project{} = project) do
-    # Get the most recent scan run for the project
-    latest_scan_run =
-      ScanRun
-      |> where([s], s.project_id == ^project.id)
-      |> order_by([s], desc: s.inserted_at)
-      |> limit(1)
-      |> Repo.one()
-
-    if latest_scan_run do
-      list_scan_results(latest_scan_run)
-    else
-      []
+    case get_latest_scan_run(project) do
+      nil -> []
+      latest_scan_run -> list_scan_results(latest_scan_run)
     end
   end
 

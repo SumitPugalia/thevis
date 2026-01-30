@@ -9,6 +9,8 @@ defmodule ThevisWeb.AdminDashboardLive do
 
   alias Thevis.Accounts
   alias Thevis.Automation
+  alias Thevis.Geo
+  alias Thevis.Geo.RecallScorer
   alias Thevis.Projects
   alias Thevis.Scans
   alias Thevis.Strategy
@@ -40,11 +42,13 @@ defmodule ThevisWeb.AdminDashboardLive do
     wiki_stats = get_wiki_stats(projects)
     task_stats = get_task_stats(projects)
     campaign_stats = get_campaign_stats(projects)
+    client_scan_results = get_client_scan_results(companies)
 
     socket
     |> assign(:companies, companies)
     |> assign(:projects, projects)
     |> assign(:recent_scans, recent_scans)
+    |> assign(:client_scan_results, client_scan_results)
     |> assign(
       :stats,
       calculate_stats(
@@ -61,6 +65,58 @@ defmodule ThevisWeb.AdminDashboardLive do
     |> assign(:wiki_stats, wiki_stats)
     |> assign(:task_stats, task_stats)
     |> assign(:campaign_stats, campaign_stats)
+  end
+
+  defp get_client_scan_results(companies) do
+    Enum.flat_map(companies, fn company ->
+      projects = Projects.list_projects_by_company(company)
+      Enum.map(projects, &build_client_scan_result(company, &1))
+    end)
+  end
+
+  defp build_client_scan_result(company, project) do
+    latest_scan = Scans.get_latest_scan_run(project)
+    result_summary = if latest_scan, do: scan_result_summary(latest_scan), else: nil
+
+    %{
+      company: company,
+      project: project,
+      product: project.product,
+      latest_scan_run: latest_scan,
+      result_summary: result_summary
+    }
+  end
+
+  defp scan_result_summary(%Scans.ScanRun{} = scan_run) do
+    case scan_run.scan_type do
+      :recall ->
+        results = Geo.list_recall_results(scan_run)
+
+        pct =
+          results
+          |> Enum.map(&%{mentioned: &1.mentioned})
+          |> RecallScorer.calculate_recall_percentage()
+
+        %{type: :recall, recall_pct: pct}
+
+      :entity_probe ->
+        confidence = entity_probe_confidence(scan_run)
+        %{type: :entity_probe, confidence: confidence}
+
+      _ ->
+        %{type: scan_run.scan_type}
+    end
+  end
+
+  defp entity_probe_confidence(scan_run) do
+    snapshots = Geo.list_entity_snapshots(scan_run)
+
+    if Enum.empty?(snapshots) do
+      nil
+    else
+      sum = Enum.reduce(snapshots, 0, fn s, acc -> acc + s.confidence_score end)
+      sum / length(snapshots)
+    end
   end
 
   defp get_recent_scans do
@@ -178,4 +234,14 @@ defmodule ThevisWeb.AdminDashboardLive do
   defp scan_type_badge(:consistency), do: "bg-pink-100 text-pink-800"
   defp scan_type_badge(:full), do: "bg-blue-100 text-blue-800"
   defp scan_type_badge(_), do: "bg-gray-100 text-gray-800"
+
+  def result_summary_display(nil), do: nil
+
+  def result_summary_display(%{type: :recall, recall_pct: pct}),
+    do: "#{Float.round(pct, 1)}% recall"
+
+  def result_summary_display(%{type: :entity_probe, confidence: conf}) when is_number(conf),
+    do: "#{Float.round(conf * 100, 1)}% confidence"
+
+  def result_summary_display(_), do: nil
 end
