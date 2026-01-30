@@ -25,6 +25,7 @@ defmodule ThevisWeb.CompanyLive.Show do
           url
           |> to_string()
           |> URI.parse()
+
         parsed.path || ""
       else
         ""

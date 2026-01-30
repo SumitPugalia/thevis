@@ -72,6 +72,7 @@ defmodule Thevis.Accounts.EntityBlockSuggestions do
           "problem_solved" => get_string(map, "problem_solved"),
           "key_concepts" => get_string(map, "key_concepts")
         }
+
         {:ok, result}
 
       {:ok, _} ->

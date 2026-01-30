@@ -153,7 +153,8 @@ defmodule ThevisWeb.CompanyLive.Index do
     {:noreply, stream_insert(socket, :companies, company)}
   end
 
-  defp save_company(%Company{id: id} = company, company_params, _current_user) when is_binary(id) do
+  defp save_company(%Company{id: id} = company, company_params, _current_user)
+       when is_binary(id) do
     Accounts.update_company(company, company_params)
   end
 
@@ -163,6 +164,7 @@ defmodule ThevisWeb.CompanyLive.Index do
         if current_user && current_user.role == :client do
           Accounts.assign_role(current_user, created, :owner)
         end
+
         {:ok, created}
 
       other ->
