@@ -133,13 +133,18 @@
                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               >
                 <option value="">Select Platform</option>
-                <option
-                  :for={{label, value} <- platform_type_options()}
-                  value={value}
-                  selected={@editing_setting.platform_type == value}
+                <optgroup
+                  :for={{group_label, opts} <- platform_type_options()}
+                  label={group_label}
                 >
-                  {label}
-                </option>
+                  <option
+                    :for={{label, value} <- opts}
+                    value={value}
+                    selected={@editing_setting.platform_type == value}
+                  >
+                    {label}
+                  </option>
+                </optgroup>
               </select>
             </div>
 
@@ -154,7 +159,7 @@
                 placeholder={~s({"repository": "owner/repo", "branch": "main"})}
               >{Jason.encode!(@editing_setting.settings || %{}, pretty: true)}</textarea>
               <p class="mt-1 text-xs text-gray-500">
-                Enter settings as JSON. For GitHub: repository and branch. For Medium: tags array.
+                Enter settings as JSON. See EXTERNAL_SERVICES_GEO.md for each platform&apos;s settings keys (e.g. business_unit_id, domain, product_slug, username, page_id, profile_url).
               </p>
             </div>
 

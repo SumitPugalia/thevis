@@ -32,12 +32,36 @@ defmodule Thevis.Integrations.PlatformSetting do
           updated_at: DateTime.t()
         }
 
+  @allowed_platforms [
+    "github",
+    "medium",
+    "blog",
+    "wordpress",
+    "contentful",
+    "g2",
+    "capterra",
+    "trustpilot",
+    "google_business",
+    "yelp",
+    "crunchbase",
+    "linkedin_company",
+    "product_hunt",
+    "clutch",
+    "alternativeto",
+    "twitter",
+    "facebook",
+    "reddit",
+    "stack_overflow",
+    "quora",
+    "hacker_news"
+  ]
+
   @doc false
   def changeset(platform_setting, attrs) do
     platform_setting
     |> cast(attrs, [:platform_type, :settings, :is_active, :project_id])
     |> validate_required([:platform_type, :project_id])
-    |> validate_inclusion(:platform_type, ["github", "medium", "blog", "wordpress", "contentful"])
+    |> validate_inclusion(:platform_type, @allowed_platforms)
     |> foreign_key_constraint(:project_id)
     |> unique_constraint([:project_id, :platform_type])
   end

@@ -70,12 +70,28 @@ defmodule ThevisWeb.Helpers.BadgeHelpers do
   def wiki_page_type_badge(:service), do: "bg-indigo-100 text-indigo-800"
   def wiki_page_type_badge(_), do: @default
 
-  # Platform type (string keys: github, medium, blog, wordpress, contentful)
+  # Platform type (content, review, directory, social, community)
   def platform_type_badge("github"), do: "bg-purple-100 text-purple-800"
   def platform_type_badge("medium"), do: "bg-green-100 text-green-800"
   def platform_type_badge("blog"), do: "bg-blue-100 text-blue-800"
   def platform_type_badge("wordpress"), do: "bg-blue-100 text-blue-800"
   def platform_type_badge("contentful"), do: "bg-indigo-100 text-indigo-800"
+  def platform_type_badge("g2"), do: "bg-orange-100 text-orange-800"
+  def platform_type_badge("capterra"), do: "bg-orange-100 text-orange-700"
+  def platform_type_badge("trustpilot"), do: "bg-emerald-100 text-emerald-800"
+  def platform_type_badge("google_business"), do: "bg-blue-100 text-blue-700"
+  def platform_type_badge("yelp"), do: "bg-red-100 text-red-800"
+  def platform_type_badge("crunchbase"), do: "bg-cyan-100 text-cyan-800"
+  def platform_type_badge("linkedin_company"), do: "bg-sky-100 text-sky-800"
+  def platform_type_badge("product_hunt"), do: "bg-orange-100 text-orange-800"
+  def platform_type_badge("clutch"), do: "bg-violet-100 text-violet-800"
+  def platform_type_badge("alternativeto"), do: "bg-teal-100 text-teal-800"
+  def platform_type_badge("twitter"), do: "bg-sky-100 text-sky-700"
+  def platform_type_badge("facebook"), do: "bg-indigo-100 text-indigo-700"
+  def platform_type_badge("reddit"), do: "bg-orange-100 text-orange-800"
+  def platform_type_badge("stack_overflow"), do: "bg-amber-100 text-amber-800"
+  def platform_type_badge("quora"), do: "bg-red-100 text-red-700"
+  def platform_type_badge("hacker_news"), do: "bg-orange-100 text-orange-700"
   def platform_type_badge(_), do: @default
 
   # Product type (cosmetic, edible, sweet, d2c, fashion, wellness, other)

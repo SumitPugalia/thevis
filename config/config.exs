@@ -108,6 +108,42 @@ config :thevis, Thevis.Integrations.Blog,
 # NewsAPI.org (optional; set NEWS_API_KEY for crawl_news)
 config :thevis, Thevis.Integrations.NewsApiClient, api_key: {System, :get_env, ["NEWS_API_KEY"]}
 
+# Review platforms (GEO authority)
+config :thevis, Thevis.Integrations.TrustpilotClient,
+  api_key: {System, :get_env, ["TRUSTPILOT_API_KEY"]}
+
+config :thevis, Thevis.Integrations.YelpClient, api_key: {System, :get_env, ["YELP_API_KEY"]}
+
+config :thevis, Thevis.Integrations.GoogleBusinessClient,
+  access_token: {System, :get_env, ["GOOGLE_BUSINESS_ACCESS_TOKEN"]}
+
+# Directories / listings
+config :thevis, Thevis.Integrations.CrunchbaseClient,
+  api_key: {System, :get_env, ["CRUNCHBASE_API_KEY"]}
+
+config :thevis, Thevis.Integrations.LinkedInCompanyClient,
+  access_token: {System, :get_env, ["LINKEDIN_ACCESS_TOKEN"]}
+
+config :thevis, Thevis.Integrations.ProductHuntClient,
+  api_token: {System, :get_env, ["PRODUCT_HUNT_TOKEN"]}
+
+# Social / professional
+config :thevis, Thevis.Integrations.TwitterClient,
+  bearer_token: {System, :get_env, ["TWITTER_BEARER_TOKEN"]}
+
+config :thevis, Thevis.Integrations.FacebookClient,
+  access_token: {System, :get_env, ["FACEBOOK_ACCESS_TOKEN"]}
+
+# Community & Q&A
+config :thevis, Thevis.Integrations.RedditClient,
+  client_id: {System, :get_env, ["REDDIT_CLIENT_ID"]},
+  client_secret: {System, :get_env, ["REDDIT_CLIENT_SECRET"]}
+
+config :thevis, Thevis.Integrations.StackExchangeClient,
+  api_key: {System, :get_env, ["STACK_EXCHANGE_KEY"]}
+
+# G2, Capterra, Clutch, AlternativeTo, Quora, Hacker News: no API key required (profile URL or slug in settings)
+
 config :thevis, Thevis.Integrations.Citations,
   enabled: true,
   citation_sources: [

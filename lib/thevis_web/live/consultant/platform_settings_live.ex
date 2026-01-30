@@ -179,11 +179,38 @@ defmodule ThevisWeb.Consultant.PlatformSettingsLive do
 
   defp platform_type_options do
     [
-      {"GitHub", "github"},
-      {"Medium", "medium"},
-      {"Blog (WordPress)", "blog"},
-      {"WordPress", "wordpress"},
-      {"Contentful", "contentful"}
+      {"Content",
+       [
+         {"GitHub", "github"},
+         {"Medium", "medium"},
+         {"Blog (WordPress)", "blog"},
+         {"WordPress", "wordpress"},
+         {"Contentful", "contentful"}
+       ]},
+      {"Review platforms",
+       [
+         {"G2", "g2"},
+         {"Capterra", "capterra"},
+         {"Trustpilot", "trustpilot"},
+         {"Google Business Profile", "google_business"},
+         {"Yelp", "yelp"}
+       ]},
+      {"Directories / listings",
+       [
+         {"Crunchbase", "crunchbase"},
+         {"LinkedIn Company", "linkedin_company"},
+         {"Product Hunt", "product_hunt"},
+         {"Clutch", "clutch"},
+         {"AlternativeTo", "alternativeto"}
+       ]},
+      {"Social / professional", [{"Twitter / X", "twitter"}, {"Facebook", "facebook"}]},
+      {"Community & Q&A",
+       [
+         {"Reddit", "reddit"},
+         {"Stack Overflow", "stack_overflow"},
+         {"Quora", "quora"},
+         {"Hacker News", "hacker_news"}
+       ]}
     ]
   end
 end
