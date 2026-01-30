@@ -12,6 +12,14 @@ defmodule ThevisWeb.Layouts do
   embed_templates "layouts/*"
 
   @doc """
+  Base URL for the application (used for OG tags and JSON-LD).
+  Uses Endpoint config so dev is localhost and prod is thevis.ai.
+  """
+  def base_url do
+    String.trim_trailing(ThevisWeb.Endpoint.url(), "/")
+  end
+
+  @doc """
   Renders your app layout.
 
   This function is typically invoked from every template,
@@ -33,6 +41,14 @@ defmodule ThevisWeb.Layouts do
   attr :current_scope, :map,
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
+
+  attr :meta_description, :string,
+    default: nil,
+    doc: "meta description and og:description for GEO and search"
+
+  attr :show_organization_schema, :boolean,
+    default: false,
+    doc: "when true, root layout injects JSON-LD Organization schema (homepage)"
 
   slot :inner_block, required: true
 
@@ -101,6 +117,25 @@ defmodule ThevisWeb.Layouts do
                       Dashboard
                     </.link>
                   <% end %>
+                <% else %>
+                  <.link
+                    navigate={~p"/about"}
+                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    About
+                  </.link>
+                  <.link
+                    navigate={~p"/geo"}
+                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    What is GEO?
+                  </.link>
+                  <.link
+                    navigate={~p"/faq"}
+                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    FAQ
+                  </.link>
                 <% end %>
               </div>
             </div>
@@ -127,6 +162,31 @@ defmodule ThevisWeb.Layouts do
     </div>
 
     <.flash_group flash={@flash} />
+    """
+  end
+
+  @doc """
+  Public footer for landing, About, GEO, and FAQ pages. Links to core GEO pages.
+  """
+  def public_footer(assigns) do
+    ~H"""
+    <footer class="bg-blue-50 border-t border-blue-100 py-12 mt-12">
+      <div class="w-full px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xl font-bold text-gray-900">thevis</span>
+            <span class="text-sm text-gray-500">.ai</span>
+          </div>
+          <nav class="flex flex-wrap gap-6 text-sm">
+            <.link navigate={~p"/"} class="text-gray-600 hover:text-gray-900">Home</.link>
+            <.link navigate={~p"/about"} class="text-gray-600 hover:text-gray-900">About</.link>
+            <.link navigate={~p"/geo"} class="text-gray-600 hover:text-gray-900">What is GEO?</.link>
+            <.link navigate={~p"/faq"} class="text-gray-600 hover:text-gray-900">FAQ</.link>
+          </nav>
+        </div>
+        <p class="mt-4 text-sm text-gray-600">© 2025 thevis.ai. All rights reserved.</p>
+      </div>
+    </footer>
     """
   end
 

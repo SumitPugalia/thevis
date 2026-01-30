@@ -4,9 +4,41 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="Thevis" suffix=" · Phoenix Framework">
+    <meta
+      name="description"
+      content={
+        assigns[:meta_description] ||
+          "thevis is an AI visibility platform that helps brands optimize for generative AI search (GEO). Measure GEO Score, improve recall, get cited by AI."
+      }
+    />
+    <meta
+      property="og:title"
+      content={assigns[:page_title] || "thevis.ai - Making brands visible to AI"}
+    />
+    <meta
+      property="og:description"
+      content={
+        assigns[:meta_description] ||
+          "thevis is an AI visibility platform that helps brands optimize for generative AI search (GEO). Measure GEO Score, improve recall, get cited by AI."
+      }
+    />
+    <meta property="og:image" content={ThevisWeb.Layouts.base_url() <> "/images/thevis.png"} />
+    <meta
+      property="og:url"
+      content={
+        assigns[:canonical_url] ||
+          ThevisWeb.Layouts.base_url() <> (assigns[:canonical_path] || "/")
+      }
+    />
+    <meta property="og:type" content="website" />
+    <.live_title default="thevis.ai" suffix=" · AI Visibility Platform">
       {assigns[:page_title]}
     </.live_title>
+    <%= if assigns[:show_organization_schema] do %>
+      <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"Organization","name":"thevis","url":"https://thevis.ai","description":"thevis helps brands optimize content for generative AI search engines using GEO (Generative Engine Optimization).","sameAs":["https://github.com/thevis","https://www.linkedin.com/company/thevis","https://www.producthunt.com"]}
+      </script>
+    <% end %>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>

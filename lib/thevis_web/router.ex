@@ -44,6 +44,11 @@ defmodule ThevisWeb.Router do
     # Landing page
     live "/", PageLive, :index
 
+    # Public GEO pages (GEO Plan: About, GEO explainer, FAQ)
+    live "/about", AboutLive, :index
+    live "/geo", GeoLive, :index
+    live "/faq", FaqLive, :index
+
     # Authentication routes
     live "/register", UserRegistrationLive, :new
     live "/login", UserLoginLive, :new

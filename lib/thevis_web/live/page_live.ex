@@ -7,6 +7,8 @@ defmodule ThevisWeb.PageLive do
 
   on_mount {ThevisWeb.Live.Hooks.AssignCurrentUser, :assign_current_user}
 
+  @default_meta_description "thevis is an AI visibility platform that helps brands optimize for generative AI search (GEO). Measure GEO Score, improve recall, get cited by AI."
+
   @impl true
   def mount(_params, _session, socket) do
     current_user = socket.assigns[:current_user]
@@ -14,6 +16,8 @@ defmodule ThevisWeb.PageLive do
     socket =
       socket
       |> assign(:page_title, "thevis.ai - Making brands visible to AI")
+      |> assign(:meta_description, @default_meta_description)
+      |> assign(:show_organization_schema, true)
       |> assign(:current_user, current_user)
 
     {:ok, socket}
@@ -27,7 +31,7 @@ defmodule ThevisWeb.PageLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_user={@current_user}>
+    <Layouts.app flash={@flash} current_user={@current_user} page_title={@page_title}>
       <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <!-- Hero Section -->
         <div class="w-full px-4 sm:px-6 lg:px-8 py-20">
@@ -219,17 +223,7 @@ defmodule ThevisWeb.PageLive do
         </div>
         
     <!-- Footer -->
-        <footer class="bg-blue-50 border-t border-blue-100 py-12">
-          <div class="w-full px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-xl font-bold text-gray-900">thevis</span>
-                <span class="text-sm text-gray-500">.ai</span>
-              </div>
-              <p class="text-sm text-gray-600">© 2025 thevis.ai. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
+        <Layouts.public_footer />
       </div>
     </Layouts.app>
     """
