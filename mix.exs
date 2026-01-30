@@ -75,6 +75,7 @@ defmodule Thevis.MixProject do
       # HTTP & API
       {:req, "~> 0.5"},
       {:jason, "~> 1.2"},
+      {:floki, "~> 0.36"},
 
       # Configuration & Utilities
       {:nimble_options, "~> 1.0"},

@@ -98,7 +98,15 @@ config :thevis, Thevis.Integrations.Blog,
   cms_type: {System, :get_env, ["BLOG_CMS_TYPE", "wordpress"]},
   api_url: {System, :get_env, ["BLOG_API_URL"]},
   api_key: {System, :get_env, ["BLOG_API_KEY"]},
-  username: {System, :get_env, ["BLOG_USERNAME"]}
+  username: {System, :get_env, ["BLOG_USERNAME"]},
+  # Contentful (when cms_type is "contentful")
+  contentful_space_id: {System, :get_env, ["CONTENTFUL_SPACE_ID"]},
+  contentful_environment_id: {System, :get_env, ["CONTENTFUL_ENVIRONMENT_ID", "master"]},
+  contentful_content_type_id: {System, :get_env, ["CONTENTFUL_CONTENT_TYPE_ID", "blogPost"]},
+  contentful_locale: {System, :get_env, ["CONTENTFUL_LOCALE", "en-US"]}
+
+# NewsAPI.org (optional; set NEWS_API_KEY for crawl_news)
+config :thevis, Thevis.Integrations.NewsApiClient, api_key: {System, :get_env, ["NEWS_API_KEY"]}
 
 config :thevis, Thevis.Integrations.Citations,
   enabled: true,

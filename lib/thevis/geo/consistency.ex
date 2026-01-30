@@ -185,12 +185,39 @@ defmodule Thevis.Geo.Consistency do
   defp get_optimizable_type(%Product{}), do: :product
   defp get_optimizable_type(%Company{}), do: :service
 
-  defp cosine_similarity(_embedding1, _embedding2) do
-    # Calculate cosine similarity between two vectors
-    # This is a simplified version - in production, use proper vector math
-    # For now, return a mock similarity score
-    # TODO: Implement proper cosine similarity calculation using pgvector
-    # Can use: SELECT embedding1 <=> embedding2 FROM embeddings;
-    0.85
+  defp cosine_similarity(embedding1, embedding2) do
+    a = embedding_to_list(embedding1)
+    b = embedding_to_list(embedding2)
+
+    if a == [] or b == [] or length(a) != length(b) do
+      0.0
+    else
+      # credo:disable-for-next-line Credo.Check.Readability.NestedFunctionCalls
+      dot = Enum.reduce(Enum.zip(a, b), 0.0, fn {x, y}, acc -> acc + x * y end)
+
+      norm_a =
+        a
+        |> Enum.reduce(0.0, fn x, acc -> acc + x * x end)
+        |> then(&:math.sqrt/1)
+
+      norm_b =
+        b
+        |> Enum.reduce(0.0, fn x, acc -> acc + x * x end)
+        |> then(&:math.sqrt/1)
+
+      if norm_a == 0.0 or norm_b == 0.0 do
+        0.0
+      else
+        max(0.0, min(1.0, dot / (norm_a * norm_b)))
+      end
+    end
   end
+
+  defp embedding_to_list(embedding) when is_list(embedding), do: embedding
+
+  defp embedding_to_list(embedding) when is_struct(embedding, Pgvector) do
+    Pgvector.to_list(embedding)
+  end
+
+  defp embedding_to_list(_), do: []
 end

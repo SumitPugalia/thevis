@@ -91,6 +91,69 @@ defmodule Thevis.Integrations.GitHubClient do
     end
   end
 
+  @doc """
+  Fetches README content for a repository (decoded as UTF-8 text).
+  """
+  def get_readme(repo_owner, repo_name) do
+    token = get_api_token()
+
+    url = "#{@api_url}/repos/#{repo_owner}/#{repo_name}/readme"
+
+    headers = maybe_add_auth([{"Accept", "application/vnd.github.v3+json"}], token)
+
+    case Req.get(url, headers: headers) do
+      {:ok, %{status: 200, body: %{"content" => encoded, "encoding" => "base64"}}} ->
+        {:ok, Base.decode64!(encoded)}
+
+      {:ok, %{status: 200, body: %{"content" => encoded}}} ->
+        {:ok, Base.decode64!(encoded)}
+
+      {:ok, %{status: 404}} ->
+        {:error, :not_found}
+
+      {:ok, %{status: status, body: body}} ->
+        {:error, {:api_error, status, body}}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Searches GitHub repositories by query. Returns a list of repo maps with :full_name, :html_url, etc.
+  """
+  def search_repositories(query, opts \\ []) do
+    token = get_api_token()
+    per_page = Keyword.get(opts, :per_page, 5)
+
+    url = "#{@api_url}/search/repositories"
+    params = [q: query, per_page: per_page, sort: "stars"]
+
+    headers = maybe_add_auth([{"Accept", "application/vnd.github.v3+json"}], token)
+
+    case Req.get(url, params: params, headers: headers) do
+      {:ok, %{status: 200, body: %{"items" => items}}} ->
+        repos =
+          Enum.map(items, fn item ->
+            %{
+              full_name: item["full_name"],
+              html_url: item["html_url"],
+              description: item["description"],
+              name: item["name"],
+              owner: item["owner"]["login"]
+            }
+          end)
+
+        {:ok, repos}
+
+      {:ok, %{status: status, body: body}} ->
+        {:error, {:api_error, status, body}}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
   defp get_file_sha(repo_owner, repo_name, file_path, branch) do
     token = get_api_token()
     url = "#{@api_url}/repos/#{repo_owner}/#{repo_name}/contents/#{file_path}?ref=#{branch}"
@@ -118,4 +181,7 @@ defmodule Thevis.Integrations.GitHubClient do
   defp get_api_token do
     Thevis.Integrations.get_api_token(__MODULE__)
   end
+
+  defp maybe_add_auth(headers, nil), do: headers
+  defp maybe_add_auth(headers, token), do: [{"Authorization", "token #{token}"} | headers]
 end

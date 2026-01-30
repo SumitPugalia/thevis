@@ -4,6 +4,8 @@ defmodule Thevis.Geo.Crawler do
   """
 
   alias Thevis.Accounts.Company
+  alias Thevis.Integrations.GitHubClient
+  alias Thevis.Integrations.NewsApiClient
   alias Thevis.Products.Product
 
   @doc """
@@ -45,78 +47,239 @@ defmodule Thevis.Geo.Crawler do
 
   @doc """
   Crawls GitHub repositories for a product or company.
+  Uses opts[:repo] or opts["repo"] as "owner/name" when set; otherwise searches GitHub for the optimizable name.
   """
-  def crawl_github(optimizable, _opts \\ []) do
-    # TODO: Implement GitHub API integration
-    # For now, return mock data structure
-    {:ok,
-     %{
-       source_type: :github,
-       source_url: "https://github.com/example/#{optimizable.name}",
-       title: "#{optimizable.name} on GitHub",
-       content: "Repository content for #{optimizable.name}",
-       metadata: %{repo_name: optimizable.name}
-     }}
+  def crawl_github(optimizable, opts \\ []) do
+    repo = opts[:repo] || opts["repo"]
+
+    result =
+      if repo && is_binary(repo) do
+        [owner, name] = String.split(repo, "/", parts: 2)
+        fetch_github_repo_content(owner, name, optimizable.name)
+      else
+        search_and_fetch_github(optimizable.name)
+      end
+
+    case result do
+      {:ok, data} ->
+        {:ok, data}
+
+      {:error, _reason} ->
+        {:ok,
+         %{
+           source_type: :github,
+           source_url: "https://github.com/search?q=#{URI.encode(optimizable.name)}",
+           title: "#{optimizable.name} on GitHub",
+           content: "No repository content found for #{optimizable.name}",
+           metadata: %{repo_name: optimizable.name}
+         }}
+    end
+  end
+
+  defp fetch_github_repo_content(owner, name, _search_name) do
+    case GitHubClient.get_readme(owner, name) do
+      {:ok, content} ->
+        {:ok,
+         %{
+           source_type: :github,
+           source_url: "https://github.com/#{owner}/#{name}",
+           title: "#{name} on GitHub",
+           content: content,
+           metadata: %{repo_owner: owner, repo_name: name}
+         }}
+
+      {:error, _} ->
+        {:error, :readme_not_found}
+    end
+  end
+
+  defp search_and_fetch_github(search_name) do
+    case GitHubClient.search_repositories(search_name, per_page: 3) do
+      {:ok, [%{html_url: url, owner: owner, name: name} | _]} ->
+        case fetch_github_repo_content(owner, name, search_name) do
+          {:ok, data} -> {:ok, Map.put(data, :source_url, url)}
+          err -> err
+        end
+
+      {:ok, []} ->
+        {:error, :no_repos_found}
+
+      {:error, _} ->
+        {:error, :search_failed}
+    end
   end
 
   @doc """
-  Crawls Medium articles for a product or company.
+  Crawls Medium for articles mentioning the optimizable.
+  Fetches the Medium search page and extracts text (no public search API).
   """
-  def crawl_medium(optimizable, _opts \\ []) do
-    # TODO: Implement Medium API integration
-    {:ok,
-     %{
-       source_type: :medium,
-       source_url: "https://medium.com/search?q=#{URI.encode(optimizable.name)}",
-       title: "Articles about #{optimizable.name}",
-       content: "Medium articles mentioning #{optimizable.name}",
-       metadata: %{search_query: optimizable.name}
-     }}
+  def crawl_medium(optimizable, opts \\ []) do
+    query = optimizable.name
+    search_url = "https://medium.com/search?q=#{URI.encode(query)}"
+    timeout = Keyword.get(opts, :timeout, 10_000)
+
+    case fetch_medium_search(search_url, timeout) do
+      {:ok, content} ->
+        {:ok,
+         %{
+           source_type: :medium,
+           source_url: search_url,
+           title: "Articles about #{query}",
+           content: content,
+           metadata: %{search_query: query}
+         }}
+
+      {:error, _reason} ->
+        {:ok,
+         %{
+           source_type: :medium,
+           source_url: search_url,
+           title: "Articles about #{query}",
+           content: "",
+           metadata: %{search_query: query}
+         }}
+    end
+  end
+
+  defp fetch_medium_search(url, timeout) do
+    headers = [
+      {"User-Agent", "thevis-crawler/1.0 (AI visibility optimization; +https://thevis.ai)"}
+    ]
+
+    case Req.get(url, headers: headers, receive_timeout: timeout) do
+      {:ok, %{status: 200, body: body}} when is_binary(body) ->
+        {:ok, extract_content(body)}
+
+      {:ok, %{status: _}} ->
+        {:error, :fetch_failed}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
   @doc """
-  Crawls news articles for a product or company.
+  Crawls news articles for a product or company via NewsAPI.org.
+  Set NEWS_API_KEY in config or env; otherwise returns empty content.
   """
-  def crawl_news(optimizable, _opts \\ []) do
-    # TODO: Implement news API integration (e.g., NewsAPI)
-    {:ok,
-     %{
-       source_type: :news,
-       source_url: "https://news.google.com/search?q=#{URI.encode(optimizable.name)}",
-       title: "News about #{optimizable.name}",
-       content: "News articles mentioning #{optimizable.name}",
-       metadata: %{search_query: optimizable.name}
-     }}
+  def crawl_news(optimizable, opts \\ []) do
+    query = optimizable.name
+    page_size = Keyword.get(opts, :page_size, 5)
+
+    case NewsApiClient.fetch_everything(query, page_size: page_size) do
+      {:ok, articles} when is_list(articles) and articles != [] ->
+        content =
+          Enum.map_join(articles, "\n\n", fn a ->
+            [a[:title], a[:description], a[:content]]
+            |> Enum.reject(&is_nil/1)
+            |> Enum.join(" ")
+          end)
+
+        {:ok,
+         %{
+           source_type: :news,
+           source_url: "https://news.google.com/search?q=#{URI.encode(query)}",
+           title: "News about #{query}",
+           content: content,
+           metadata: %{search_query: query, article_count: length(articles)}
+         }}
+
+      {:ok, []} ->
+        {:ok,
+         %{
+           source_type: :news,
+           source_url: "https://news.google.com/search?q=#{URI.encode(query)}",
+           title: "News about #{query}",
+           content: "No articles found for #{query}",
+           metadata: %{search_query: query}
+         }}
+
+      {:error, _reason} ->
+        {:ok,
+         %{
+           source_type: :news,
+           source_url: "https://news.google.com/search?q=#{URI.encode(query)}",
+           title: "News about #{query}",
+           content: "",
+           metadata: %{search_query: query}
+         }}
+    end
   end
 
   @doc """
-  Crawls company website for content.
+  Crawls company website for content via HTTP and HTML parsing.
   """
-  def crawl_website(%Company{} = company, _opts \\ []) do
+  def crawl_website(%Company{} = company, opts \\ []) do
     if company.website_url do
-      # TODO: Implement web scraping
-      {:ok,
-       %{
-         source_type: :website,
-         source_url: company.website_url,
-         title: "#{company.name} Website",
-         content: "Content from #{company.website_url}",
-         metadata: %{domain: company.domain}
-       }}
+      timeout = Keyword.get(opts, :timeout, 10_000)
+
+      case fetch_website_content(company.website_url, timeout) do
+        {:ok, content} ->
+          {:ok,
+           %{
+             source_type: :website,
+             source_url: company.website_url,
+             title: "#{company.name} Website",
+             content: content,
+             metadata: %{domain: company.domain}
+           }}
+
+        {:error, reason} ->
+          {:ok,
+           %{
+             source_type: :website,
+             source_url: company.website_url,
+             title: "#{company.name} Website",
+             content: "",
+             metadata: %{domain: company.domain, fetch_error: inspect(reason)}
+           }}
+      end
     else
       {:error, :no_website_url}
     end
   end
 
+  defp fetch_website_content(url, timeout) do
+    headers = [
+      {"User-Agent", "thevis-crawler/1.0 (AI visibility optimization; +https://thevis.ai)"}
+    ]
+
+    case Req.get(url, headers: headers, receive_timeout: timeout) do
+      {:ok, %{status: 200, body: body}} when is_binary(body) ->
+        {:ok, extract_content(body)}
+
+      {:ok, %{status: status}} when status in 300..399 ->
+        {:error, :redirect_not_followed}
+
+      {:ok, %{status: status}} ->
+        {:error, {:http_status, status}}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
   @doc """
-  Extracts text content from HTML.
+  Extracts text content from HTML using Floki when available.
   """
   def extract_content(html) when is_binary(html) do
-    # Basic HTML tag removal - in production, use Floki or similar
-    html
-    |> String.replace(~r/<[^>]+>/, "")
-    |> String.replace(~r/\s+/, " ")
-    |> String.trim()
+    case Floki.parse_document(html) do
+      {:ok, doc} ->
+        doc
+        |> Floki.filter_out("script")
+        |> Floki.filter_out("style")
+        |> Floki.filter_out("noscript")
+        |> Floki.text(deep: true)
+        |> String.replace(~r/\s+/u, " ")
+        |> String.trim()
+
+      {:error, _} ->
+        # Fallback: strip tags with regex
+        html
+        |> String.replace(~r/<[^>]+>/, " ")
+        |> String.replace(~r/\s+/u, " ")
+        |> String.trim()
+    end
   end
 
   def extract_content(_), do: ""
