@@ -5,8 +5,10 @@ defmodule Thevis.AI do
   This module provides a unified interface to access the configured AI adapter.
   """
 
+  @cache_key :thevis_ai_cached_adapter
+
   @doc """
-  Gets the configured AI adapter.
+  Gets the configured AI adapter, cached per process to avoid repeated config lookups and adapter creation.
 
   ## Examples
 
@@ -15,17 +17,25 @@ defmodule Thevis.AI do
 
   """
   def get_adapter do
+    case Process.get(@cache_key) do
+      nil ->
+        adapter = build_adapter()
+        Process.put(@cache_key, adapter)
+        adapter
+
+      cached ->
+        cached
+    end
+  end
+
+  defp build_adapter do
     config = Application.get_env(:thevis, Thevis.AI, [])
     adapter_module = Keyword.get(config, :adapter, Thevis.AI.OpenAIAdapter)
 
-    # For mock adapters (Mox), just return the module
-    # Mox mocks don't have a new/1 function, check if it exists
     if Code.ensure_loaded?(adapter_module) && function_exported?(adapter_module, :new, 1) do
-      # Extract adapter-specific config
       adapter_config = Keyword.take(config, [:api_key, :base_url, :model, :embedding_model])
       adapter_module.new(adapter_config)
     else
-      # Mock adapter (no new/1 function) - return module directly
       adapter_module
     end
   end

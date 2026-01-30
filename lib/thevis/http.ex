@@ -43,9 +43,20 @@ defmodule Thevis.HTTP do
 
   @default_receive_timeout 30_000
 
+  @type error_atom ::
+          :not_found
+          | :unauthorized
+          | :forbidden
+          | :redirect
+          | :server_error
+          | :api_error
+          | :timeout
+          | :network_error
+
   @doc """
   Performs an HTTP GET request. Returns `{:ok, body}` or `{:error, atom}`.
   """
+  @spec get(String.t(), keyword()) :: {:ok, term()} | {:error, error_atom()}
   def get(url, opts \\ []) do
     request(:get, url, opts)
   end
@@ -53,6 +64,7 @@ defmodule Thevis.HTTP do
   @doc """
   Performs an HTTP POST request. Returns `{:ok, body}` or `{:error, atom}`.
   """
+  @spec post(String.t(), keyword()) :: {:ok, term()} | {:error, error_atom()}
   def post(url, opts \\ []) do
     request(:post, url, opts)
   end
@@ -60,6 +72,7 @@ defmodule Thevis.HTTP do
   @doc """
   Performs an HTTP PUT request. Returns `{:ok, body}` or `{:error, atom}`.
   """
+  @spec put(String.t(), keyword()) :: {:ok, term()} | {:error, error_atom()}
   def put(url, opts \\ []) do
     request(:put, url, opts)
   end
@@ -97,9 +110,11 @@ defmodule Thevis.HTTP do
 
   defp normalize_response(url, method, {:ok, %{status: status, body: body}}) do
     error_atom = status_to_atom(status)
+    log_level = if status >= 500, do: :error, else: :warning
 
-    Logger.warning(
-      "[Thevis.HTTP] #{method} #{url} failed: status=#{status} error=#{error_atom} body=#{inspect_body(body)}"
+    Logger.log(
+      log_level,
+      "[Thevis.HTTP] #{method} #{sanitize_url(url)} failed: status=#{status} error=#{error_atom} body=#{inspect_body(body)}"
     )
 
     {:error, error_atom}
@@ -107,9 +122,9 @@ defmodule Thevis.HTTP do
 
   defp normalize_response(url, method, {:error, reason}) do
     error_atom = reason_to_atom(reason)
-
-    Logger.warning(
-      "[Thevis.HTTP] #{method} #{url} failed: #{error_atom} reason=#{inspect(reason)}"
+    # Connection/timeout failures are errors; log reason without full inspect for structs
+    Logger.error(
+      "[Thevis.HTTP] #{method} #{sanitize_url(url)} failed: #{error_atom} reason=#{inspect_reason(reason)}"
     )
 
     {:error, error_atom}
@@ -122,11 +137,12 @@ defmodule Thevis.HTTP do
   defp status_to_atom(status) when status >= 500 and status < 600, do: :server_error
   defp status_to_atom(_), do: :api_error
 
+  # Req connection errors are structs; map reason to atoms
   defp reason_to_atom(%{reason: :timeout}), do: :timeout
-  defp reason_to_atom(%{reason: reason}) when is_atom(reason), do: reason
+  defp reason_to_atom(%{reason: :closed}), do: :network_error
+  defp reason_to_atom(%{reason: :econnrefused}), do: :network_error
+  defp reason_to_atom(%{reason: _reason}), do: :network_error
   defp reason_to_atom(%{__struct__: _}), do: :network_error
-  defp reason_to_atom(:timeout), do: :timeout
-  defp reason_to_atom(_reason), do: :network_error
 
   defp inspect_body(body) when is_binary(body) do
     case String.length(body) do
@@ -135,5 +151,38 @@ defmodule Thevis.HTTP do
     end
   end
 
-  defp inspect_body(body), do: inspect(body)
+  defp inspect_body(body) when is_map(body) or is_list(body) do
+    inspected = inspect(body)
+    trimmed = String.slice(inspected, 0, 500)
+    if String.length(trimmed) >= 500, do: trimmed <> "...", else: trimmed
+  end
+
+  defp inspect_body(body) do
+    inspected = inspect(body)
+    String.slice(inspected, 0, 500)
+  end
+
+  defp inspect_reason(%{__struct__: struct, reason: reason}),
+    do: "#{struct} reason=#{inspect(reason)}"
+
+  defp inspect_reason(reason), do: inspect(reason)
+
+  @secret_params ~w(apiKey api_key token key secret)
+  defp sanitize_url(url) when is_binary(url) do
+    case URI.parse(url) do
+      %{query: nil} ->
+        url
+
+      %{query: query} = uri ->
+        sanitized =
+          query
+          |> URI.decode_query()
+          |> Enum.reject(fn {k, _} ->
+            k in @secret_params or String.downcase(k) in @secret_params
+          end)
+          |> URI.encode_query()
+
+        URI.to_string(%{uri | query: sanitized})
+    end
+  end
 end

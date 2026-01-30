@@ -101,6 +101,7 @@ defmodule Thevis.MixProject do
       {:bandit, "~> 1.5"},
 
       # Testing
+      {:bypass, "~> 2.1", only: :test},
       {:lazy_html, ">= 0.1.0", only: :test},
       {:ex_machina, "~> 2.7", only: :test},
       {:mox, "~> 1.0", only: :test},

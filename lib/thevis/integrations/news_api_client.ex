@@ -50,21 +50,6 @@ defmodule Thevis.Integrations.NewsApiClient do
   end
 
   defp get_api_key do
-    config = Application.get_env(:thevis, __MODULE__)
-
-    case config do
-      nil ->
-        nil
-
-      list when is_list(list) ->
-        case Keyword.get(list, :api_key) do
-          {_mod, :get_env, [key]} -> System.get_env(key)
-          key when is_binary(key) -> key
-          _ -> nil
-        end
-
-      _ ->
-        nil
-    end
+    Thevis.Integrations.get_config_value(__MODULE__, :api_key)
   end
 end

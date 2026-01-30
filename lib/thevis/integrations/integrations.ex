@@ -77,24 +77,44 @@ defmodule Thevis.Integrations do
   end
 
   @doc """
-  Resolves API token for an integration module from application config.
-  Used by GitHub, Medium, and other API clients.
+  Resolves a config value for an integration module from application config.
+
+  Supports:
+  - `{System, :get_env, [key]}` → `System.get_env(key)`
+  - `{System, :get_env, [key, default]}` → `System.get_env(key) || default`
+  - binary → returned as-is
+  - other → `default`
+
+  Used by GitHub, Medium, BlogClient, NewsApiClient, and other API clients.
   """
-  def get_api_token(module) do
+  @spec get_config_value(module(), atom(), term()) :: binary() | term() | nil
+  def get_config_value(module, key, default \\ nil) do
     config = Application.get_env(:thevis, module)
 
     if config do
-      api_token = Keyword.get(config, :api_token)
-
-      case api_token do
-        {_system, :get_env, [key]} -> System.get_env(key)
-        token when is_binary(token) -> token
-        _ -> nil
-      end
+      raw = Keyword.get(config, key, default)
+      resolve_config_value(raw, default)
     else
-      nil
+      default
     end
   end
+
+  @doc """
+  Resolves API token for an integration module from application config.
+  Convenience wrapper around `get_config_value(module, :api_token)`.
+  """
+  @spec get_api_token(module()) :: binary() | nil
+  def get_api_token(module) do
+    get_config_value(module, :api_token)
+  end
+
+  defp resolve_config_value({_system, :get_env, [key]}, _default), do: System.get_env(key)
+
+  defp resolve_config_value({_system, :get_env, [key, default]}, _default),
+    do: System.get_env(key) || default
+
+  defp resolve_config_value(val, _default) when is_binary(val), do: val
+  defp resolve_config_value(_, default), do: default
 
   defp apply_platform_filters(query, %{platform_type: platform_type}) do
     where(query, [ps], ps.platform_type == ^platform_type)

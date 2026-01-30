@@ -95,99 +95,42 @@ defmodule Thevis.Integrations.BlogClient do
   end
 
   defp get_contentful_space_id do
-    get_config_value(:contentful_space_id)
+    Thevis.Integrations.get_config_value(__MODULE__, :contentful_space_id)
   end
 
   defp get_contentful_environment_id do
-    get_config_value(:contentful_environment_id) || "master"
+    Thevis.Integrations.get_config_value(__MODULE__, :contentful_environment_id, "master")
   end
 
   defp get_contentful_content_type_id do
-    get_config_value(:contentful_content_type_id) || "blogPost"
+    Thevis.Integrations.get_config_value(__MODULE__, :contentful_content_type_id, "blogPost")
   end
 
   defp get_contentful_locale do
-    get_config_value(:contentful_locale) || "en-US"
+    Thevis.Integrations.get_config_value(__MODULE__, :contentful_locale, "en-US")
   end
 
   defp get_contentful_base_url do
-    get_config_value(:contentful_base_url) || "https://api.contentful.com"
+    Thevis.Integrations.get_config_value(
+      __MODULE__,
+      :contentful_base_url,
+      "https://api.contentful.com"
+    )
   end
-
-  defp get_config_value(key) do
-    config = Application.get_env(:thevis, __MODULE__)
-    if config, do: resolve_config_value(Keyword.get(config, key)), else: nil
-  end
-
-  defp resolve_config_value({System, :get_env, [key]}), do: System.get_env(key)
-
-  defp resolve_config_value({System, :get_env, [key, default]}),
-    do: System.get_env(key) || default
-
-  defp resolve_config_value(val) when is_binary(val), do: val
-  defp resolve_config_value(_), do: nil
 
   defp get_cms_type do
-    config = Application.get_env(:thevis, __MODULE__)
-
-    if config do
-      cms_type = Keyword.get(config, :cms_type, "wordpress")
-
-      case cms_type do
-        {System, :get_env, [key, default]} -> System.get_env(key) || default
-        type when is_binary(type) -> type
-        _ -> "wordpress"
-      end
-    else
-      "wordpress"
-    end
+    Thevis.Integrations.get_config_value(__MODULE__, :cms_type, "wordpress")
   end
 
   defp get_api_url do
-    config = Application.get_env(:thevis, __MODULE__)
-
-    if config do
-      api_url = Keyword.get(config, :api_url)
-
-      case api_url do
-        {System, :get_env, [key]} -> System.get_env(key)
-        url when is_binary(url) -> url
-        _ -> nil
-      end
-    else
-      nil
-    end
+    Thevis.Integrations.get_config_value(__MODULE__, :api_url)
   end
 
   defp get_username do
-    config = Application.get_env(:thevis, __MODULE__)
-
-    if config do
-      username = Keyword.get(config, :username)
-
-      case username do
-        {System, :get_env, [key]} -> System.get_env(key)
-        username_value when is_binary(username_value) -> username_value
-        _ -> nil
-      end
-    else
-      nil
-    end
+    Thevis.Integrations.get_config_value(__MODULE__, :username)
   end
 
   defp get_api_key do
-    config = Application.get_env(:thevis, __MODULE__)
-
-    if config do
-      api_key = Keyword.get(config, :api_key)
-
-      case api_key do
-        {System, :get_env, [key]} -> System.get_env(key)
-        key_value when is_binary(key_value) -> key_value
-        _ -> nil
-      end
-    else
-      nil
-    end
+    Thevis.Integrations.get_config_value(__MODULE__, :api_key)
   end
 end

@@ -297,6 +297,7 @@ defmodule Thevis.Scans do
     |> where([s], s.project_id == ^project.id)
     |> order_by([s], desc: s.inserted_at)
     |> limit(1)
+    |> preload([s], [:project, :scan_results])
     |> Repo.one()
   end
 

@@ -37,14 +37,19 @@ defmodule ThevisWeb.Layouts do
   slot :inner_block, required: true
 
   def app(assigns) do
-    is_landing_page = Map.get(assigns, :page_title) == "thevis.ai - Making brands visible to AI"
+    assigns =
+      assign(
+        assigns,
+        :is_landing_page,
+        assigns.page_title == "thevis.ai - Making brands visible to AI"
+      )
 
     ~H"""
     <div class="min-h-screen bg-gray-50">
       <!-- Navigation Header -->
       <nav class={[
         "sticky top-0 z-50",
-        if(is_landing_page,
+        if(@is_landing_page,
           do: "bg-white/80 backdrop-blur-sm border-b border-gray-200",
           else: "bg-white border-b border-gray-200"
         )
@@ -57,7 +62,7 @@ defmodule ThevisWeb.Layouts do
                   <img
                     src={~p"/images/thevis.png"}
                     alt="thevis.ai"
-                    class={if(is_landing_page, do: "h-20", else: "h-20")}
+                    class="h-20"
                   />
                 </.link>
               </div>
@@ -116,7 +121,7 @@ defmodule ThevisWeb.Layouts do
       </nav>
       
     <!-- Main Content -->
-      <main class={if(is_landing_page, do: "w-full", else: "w-full px-4 sm:px-6 lg:px-8 py-8")}>
+      <main class={if(@is_landing_page, do: "w-full", else: "w-full px-4 sm:px-6 lg:px-8 py-8")}>
         {render_slot(@inner_block)}
       </main>
     </div>
