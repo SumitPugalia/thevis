@@ -19,7 +19,7 @@ defmodule Thevis.Integrations.StackExchangeClient do
   @spec fetch_profile(map()) :: {:ok, map()} | {:error, atom()}
   def fetch_profile(%{"site" => site} = settings) when is_binary(site) and site != "" do
     api_key = Thevis.Integrations.get_config_value(__MODULE__, :api_key)
-    params = [key: api_key, site: site] |> Enum.reject(fn {_k, v} -> is_nil(v) or v == "" end)
+    params = Enum.reject([key: api_key, site: site], fn {_k, v} -> is_nil(v) or v == "" end)
 
     if Map.has_key?(settings, "user_id") and settings["user_id"] != "" do
       get_user(settings["user_id"], params)

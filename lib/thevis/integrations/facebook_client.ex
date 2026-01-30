@@ -38,26 +38,9 @@ defmodule Thevis.Integrations.FacebookClient do
     headers = [{"Content-Type", "application/json"}]
 
     case Thevis.HTTP.get(url, headers: headers, params: params) do
-      {:ok, body} when is_map(body) ->
-        if Map.has_key?(body, "name") do
-          {:ok,
-           %{
-             name: body["name"],
-             about: body["about"],
-             profile_url: body["link"] || "https://www.facebook.com/#{id}",
-             fan_count: body["fan_count"]
-           }}
-        else
-          if Map.has_key?(body, "error"),
-            do: {:error, :not_found},
-            else: {:error, :unexpected_response}
-        end
-
-      {:ok, _} ->
-        {:error, :unexpected_response}
-
-      {:error, reason} ->
-        {:error, reason}
+      {:ok, body} when is_map(body) -> parse_page_body(body, id, "name")
+      {:ok, _} -> {:error, :unexpected_response}
+      {:error, reason} -> {:error, reason}
     end
   end
 
@@ -67,26 +50,28 @@ defmodule Thevis.Integrations.FacebookClient do
     headers = [{"Content-Type", "application/json"}]
 
     case Thevis.HTTP.get(url, headers: headers, params: params) do
-      {:ok, body} when is_map(body) ->
-        if Map.has_key?(body, "id") do
-          {:ok,
-           %{
-             name: body["name"],
-             about: body["about"],
-             profile_url: body["link"] || "https://www.facebook.com/#{username}",
-             fan_count: body["fan_count"]
-           }}
-        else
-          if Map.has_key?(body, "error"),
-            do: {:error, :not_found},
-            else: {:error, :unexpected_response}
-        end
+      {:ok, body} when is_map(body) -> parse_page_body(body, username, "id")
+      {:ok, _} -> {:error, :unexpected_response}
+      {:error, reason} -> {:error, reason}
+    end
+  end
 
-      {:ok, _} ->
+  defp parse_page_body(body, id_or_username, required_key) do
+    cond do
+      Map.has_key?(body, required_key) ->
+        {:ok,
+         %{
+           name: body["name"],
+           about: body["about"],
+           profile_url: body["link"] || "https://www.facebook.com/#{id_or_username}",
+           fan_count: body["fan_count"]
+         }}
+
+      Map.has_key?(body, "error") ->
+        {:error, :not_found}
+
+      true ->
         {:error, :unexpected_response}
-
-      {:error, reason} ->
-        {:error, reason}
     end
   end
 end

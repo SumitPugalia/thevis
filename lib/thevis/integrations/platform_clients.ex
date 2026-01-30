@@ -48,5 +48,7 @@ defmodule Thevis.Integrations.PlatformClients do
   Returns all platform types that have a dedicated client (review, directory, social, community).
   """
   @spec supported_platforms() :: [String.t()]
-  def supported_platforms(), do: Map.keys(@platform_to_client)
+  def supported_platforms do
+    Map.keys(@platform_to_client)
+  end
 end
