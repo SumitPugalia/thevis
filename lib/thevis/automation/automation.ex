@@ -17,8 +17,7 @@ defmodule Thevis.Automation do
   """
   def list_campaigns(project_id, filters \\ %{}) do
     base_query =
-      from(c in Campaign, where: c.project_id == ^project_id)
-      |> preload([:project])
+      preload(from(c in Campaign, where: c.project_id == ^project_id), [:project])
 
     base_query
     |> apply_campaign_filters(filters)

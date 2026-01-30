@@ -67,8 +67,7 @@ defmodule Thevis.Wikis do
   """
   def list_wiki_pages(project_id, filters \\ %{}) do
     base_query =
-      from(wp in WikiPage, where: wp.project_id == ^project_id)
-      |> preload([:project, :platform])
+      preload(from(wp in WikiPage, where: wp.project_id == ^project_id), [:project, :platform])
 
     base_query
     |> apply_page_filters(filters)
