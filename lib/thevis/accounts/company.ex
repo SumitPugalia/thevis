@@ -18,6 +18,12 @@ defmodule Thevis.Accounts.Company do
     field :company_type, Ecto.Enum, values: [:product_based, :service_based]
     field :competitors, {:array, :map}, default: []
 
+    # Entity block (GEO / Step 1 workflow): one-line definition, category, problem solved, key concepts
+    field :category, :string
+    field :one_line_definition, :string
+    field :problem_solved, :string
+    field :key_concepts, :string
+
     has_many :roles, Thevis.Accounts.Role
 
     timestamps(type: :utc_datetime_usec)
@@ -32,6 +38,10 @@ defmodule Thevis.Accounts.Company do
           website_url: String.t() | nil,
           company_type: :product_based | :service_based,
           competitors: [map()],
+          category: String.t() | nil,
+          one_line_definition: String.t() | nil,
+          problem_solved: String.t() | nil,
+          key_concepts: String.t() | nil,
           roles: Ecto.Association.NotLoaded.t() | [Thevis.Accounts.Role.t()],
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
@@ -47,7 +57,11 @@ defmodule Thevis.Accounts.Company do
       :description,
       :website_url,
       :company_type,
-      :competitors
+      :competitors,
+      :category,
+      :one_line_definition,
+      :problem_solved,
+      :key_concepts
     ])
     |> validate_required([:name, :domain, :industry, :company_type])
     |> validate_format(:domain, ~r/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/,

@@ -1,89 +1,219 @@
 <Layouts.app flash={@flash} current_user={@current_user} page_title={@page_title}>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900">Companies</h1>
-        <p class="mt-2 text-sm text-gray-600">
-          {if assigns[:is_admin_route], do: "Manage all client companies", else: "Your companies"}
-        </p>
+    <%= if assigns[:live_action] in [:new, :edit] do %>
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">{@page_title}</h1>
+        </div>
+        <.link
+          navigate={if assigns[:is_admin_route], do: ~p"/admin/companies", else: ~p"/companies"}
+          class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          <.icon name="hero-arrow-left" class="w-5 h-5" /> Back
+        </.link>
       </div>
-      <.link
-        navigate={
-          if assigns[:is_admin_route], do: ~p"/admin/companies/new", else: ~p"/companies/new"
-        }
-        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        <.icon name="hero-plus" class="w-5 h-5" /> New Company
-      </.link>
-    </div>
 
-    <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                Name
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                Domain
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                Industry
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                Type
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200" id="companies" phx-update="stream">
-            <tr :for={{id, company} <- @streams.companies} id={id} class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{company.name}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-600">{company.domain}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-600">{company.industry}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{BadgeHelpers.company_type_badge(company.company_type)}"}>
-                  {String.replace(to_string(company.company_type), "_", " ")
-                  |> String.capitalize()}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <div class="flex items-center gap-2">
-                  <.link
-                    navigate={
-                      if assigns[:is_admin_route],
-                        do: ~p"/admin/companies/#{company.id}",
-                        else: ~p"/companies/#{company.id}"
-                    }
-                    class="text-blue-600 hover:text-blue-900"
-                  >
-                    View
-                  </.link>
-                  <.link
-                    navigate={
-                      if assigns[:is_admin_route],
-                        do: ~p"/admin/companies/#{company.id}/edit",
-                        else: ~p"/companies/#{company.id}/edit"
-                    }
-                    class="text-gray-600 hover:text-gray-900"
-                  >
-                    Edit
-                  </.link>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <.form
+          for={@form}
+          id="company-form"
+          phx-submit="save"
+          phx-change="validate"
+          class="space-y-6"
+        >
+          <.input
+            field={@form[:name]}
+            type="text"
+            label="Company Name"
+            required
+            placeholder="Acme Inc."
+          />
+          <.input
+            field={@form[:domain]}
+            type="text"
+            label="Company Domain"
+            required
+            placeholder="acme.com"
+          />
+          <.input
+            field={@form[:industry]}
+            type="text"
+            label="Industry"
+            required
+            placeholder="Technology, Cosmetics, etc."
+          />
+          <.input
+            field={@form[:website_url]}
+            type="url"
+            label="Website URL"
+            placeholder="https://acme.com"
+          />
+          <.input
+            field={@form[:description]}
+            type="textarea"
+            label="Company Description"
+            placeholder="Brief description of your company"
+          />
+          <.dropdown
+            field={@form[:company_type]}
+            label="Company Type"
+            required
+            options={[{"Product-Based", "product_based"}, {"Service-Based", "service_based"}]}
+          />
+
+          <div class="border-t border-gray-200 pt-6">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold text-gray-900">
+                Entity block (for AI visibility)
+              </h3>
+              <%= if assigns[:is_admin_route] && @company.id do %>
+                <button
+                  type="button"
+                  phx-click="suggest_entity_block"
+                  disabled={@suggesting_entity_block}
+                  class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <%= if @suggesting_entity_block do %>
+                    <.icon name="hero-arrow-path" class="w-4 h-4 animate-spin" /> Suggesting...
+                  <% else %>
+                    <.icon name="hero-sparkles" class="w-4 h-4" /> Suggest with AI
+                  <% end %>
+                </button>
+              <% end %>
+            </div>
+            <p class="text-xs text-gray-500 mb-4">
+              One-line definition, category, and key concepts help AI systems understand and cite your company. Use the same wording everywhere.
+            </p>
+            <.input
+              field={@form[:category]}
+              type="text"
+              label="Category"
+              placeholder="e.g., Skincare brand, B2B SaaS, Consulting firm"
+            />
+            <.input
+              field={@form[:one_line_definition]}
+              type="textarea"
+              label="One-line definition"
+              placeholder="e.g., Acme helps brands optimize content for generative AI search using GEO."
+            />
+            <.input
+              field={@form[:problem_solved]}
+              type="textarea"
+              label="Primary problem solved"
+              placeholder="e.g., Brands are invisible in AI-generated answers."
+            />
+            <.input
+              field={@form[:key_concepts]}
+              type="text"
+              label="Key concepts (comma-separated)"
+              placeholder="e.g., GEO, AI visibility, generative search"
+            />
+          </div>
+
+          <div class="flex gap-3">
+            <.button
+              type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg"
+            >
+              Save Company
+            </.button>
+            <.link
+              patch={if assigns[:is_admin_route], do: ~p"/admin/companies", else: ~p"/companies"}
+              class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200"
+            >
+              Cancel
+            </.link>
+          </div>
+        </.form>
       </div>
-    </div>
+    <% else %>
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Companies</h1>
+          <p class="mt-2 text-sm text-gray-600">
+            {if assigns[:is_admin_route],
+              do: "Manage all client companies",
+              else: "Your companies"}
+          </p>
+        </div>
+        <.link
+          navigate={
+            if assigns[:is_admin_route], do: ~p"/admin/companies/new", else: ~p"/companies/new"
+          }
+          class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <.icon name="hero-plus" class="w-5 h-5" /> New Company
+        </.link>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Name
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Domain
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Industry
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Type
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200" id="companies" phx-update="stream">
+              <tr :for={{id, company} <- @streams.companies} id={id} class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900">{company.name}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-600">{company.domain}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-600">{company.industry}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{BadgeHelpers.company_type_badge(company.company_type)}"}>
+                    {String.replace(to_string(company.company_type), "_", " ")
+                    |> String.capitalize()}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex items-center gap-2">
+                    <.link
+                      navigate={
+                        if assigns[:is_admin_route],
+                          do: ~p"/admin/companies/#{company.id}",
+                          else: ~p"/companies/#{company.id}"
+                      }
+                      class="text-blue-600 hover:text-blue-900"
+                    >
+                      View
+                    </.link>
+                    <.link
+                      navigate={
+                        if assigns[:is_admin_route],
+                          do: ~p"/admin/companies/#{company.id}/edit",
+                          else: ~p"/companies/#{company.id}/edit"
+                      }
+                      class="text-gray-600 hover:text-gray-900"
+                    >
+                      Edit
+                    </.link>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% end %>
   </div>
 </Layouts.app>

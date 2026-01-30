@@ -93,6 +93,7 @@ defmodule ThevisWeb.Router do
     pipe_through [:browser, :require_authenticated_user, :require_admin]
 
     live "/dashboard", AdminDashboardLive, :index
+    live "/scheduled-tasks", Admin.ScheduledTasksLive, :index
 
     # Company management (admin view)
     live "/companies", CompanyLive.Index, :index

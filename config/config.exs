@@ -9,7 +9,8 @@ import Config
 
 config :thevis,
   ecto_repos: [Thevis.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  env: Mix.env()
 
 # Configures the endpoint
 config :thevis, ThevisWeb.Endpoint,

@@ -575,6 +575,25 @@
           </div>
         </div>
       </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Scheduled Tasks</h3>
+            <p class="mt-2 text-sm text-gray-600">
+              Control automation: baseline scans, recurring scans. View, enable, stop, or run now.
+            </p>
+            <div class="mt-4 flex space-x-3">
+              <.link
+                navigate={~p"/admin/scheduled-tasks"}
+                class="text-sm font-medium text-blue-600 hover:text-blue-900"
+              >
+                View Scheduled Tasks →
+              </.link>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </Layouts.app>

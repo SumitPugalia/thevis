@@ -16,14 +16,25 @@ defmodule ThevisWeb.CompanyLive.Show do
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _url, socket) do
+  def handle_params(%{"id" => id}, url, socket) do
     company = Accounts.get_company!(id)
+
+    path =
+      if url do
+        parsed = URI.parse(to_string(url))
+        parsed.path || ""
+      else
+        ""
+      end
+
+    is_admin_route = String.starts_with?(path, "/admin")
 
     {:noreply,
      socket
      |> assign(:page_title, company.name)
      |> assign(:company, company)
-     |> assign(:current_user, socket.assigns[:current_user])}
+     |> assign(:current_user, socket.assigns[:current_user])
+     |> assign(:is_admin_route, is_admin_route)}
   end
 
   @impl true
@@ -37,7 +48,11 @@ defmodule ThevisWeb.CompanyLive.Show do
             <p class="mt-2 text-sm text-gray-600">{@company.domain}</p>
           </div>
           <.link
-            navigate={~p"/companies/#{@company.id}/edit"}
+            navigate={
+              if @is_admin_route,
+                do: ~p"/admin/companies/#{@company.id}/edit",
+                else: ~p"/companies/#{@company.id}/edit"
+            }
             class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
             <.icon name="hero-pencil" class="w-5 h-5" /> Edit
@@ -74,10 +89,43 @@ defmodule ThevisWeb.CompanyLive.Show do
                 <% end %>
               </dd>
             </div>
-            <div>
+            <div class="sm:col-span-2">
               <dt class="text-sm font-medium text-gray-500">Description</dt>
               <dd class="mt-1 text-sm text-gray-900">{@company.description || "-"}</dd>
             </div>
+            <%= if @company.category || @company.one_line_definition || @company.problem_solved || @company.key_concepts do %>
+              <div class="sm:col-span-2 border-t border-gray-200 pt-6 mt-2">
+                <h3 class="text-sm font-semibold text-gray-900 mb-3">
+                  Entity block (for AI visibility)
+                </h3>
+                <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <%= if @company.category do %>
+                    <div>
+                      <dt class="text-sm font-medium text-gray-500">Category</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{@company.category}</dd>
+                    </div>
+                  <% end %>
+                  <%= if @company.one_line_definition do %>
+                    <div class="sm:col-span-2">
+                      <dt class="text-sm font-medium text-gray-500">One-line definition</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{@company.one_line_definition}</dd>
+                    </div>
+                  <% end %>
+                  <%= if @company.problem_solved do %>
+                    <div class="sm:col-span-2">
+                      <dt class="text-sm font-medium text-gray-500">Primary problem solved</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{@company.problem_solved}</dd>
+                    </div>
+                  <% end %>
+                  <%= if @company.key_concepts do %>
+                    <div>
+                      <dt class="text-sm font-medium text-gray-500">Key concepts</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{@company.key_concepts}</dd>
+                    </div>
+                  <% end %>
+                </dl>
+              </div>
+            <% end %>
           </dl>
         </div>
       </div>

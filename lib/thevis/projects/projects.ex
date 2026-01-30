@@ -126,9 +126,31 @@ defmodule Thevis.Projects do
 
     attrs_with_product = Map.put(attrs_string_keys, "product_id", product.id)
 
-    %Project{}
-    |> Project.changeset(attrs_with_product)
-    |> Repo.insert()
+    case %Project{}
+         |> Project.changeset(attrs_with_product)
+         |> Repo.insert() do
+      {:ok, project} ->
+        maybe_create_and_run_baseline(project)
+        {:ok, project}
+
+      error ->
+        error
+    end
+  end
+
+  defp maybe_create_and_run_baseline(%Project{} = project) do
+    # Skip auto-run in test to avoid triggering Oban jobs and AI adapter
+    if Application.get_env(:thevis, :env) == :test do
+      :ok
+    else
+      case Thevis.Automation.Schedules.create_schedules_for_project(project) do
+        {:ok, [baseline_schedule | _]} ->
+          Thevis.Automation.Schedules.run_now(baseline_schedule)
+
+        _ ->
+          :ok
+      end
+    end
   end
 
   @doc """

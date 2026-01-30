@@ -7,15 +7,21 @@ defmodule Thevis.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
+    base_children = [
       ThevisWeb.Telemetry,
       Thevis.Repo,
       {Oban, Application.get_env(:thevis, Oban)},
       {DNSCluster, query: Application.get_env(:thevis, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Thevis.PubSub},
-      # Start to serve requests, typically the last entry
       ThevisWeb.Endpoint
     ]
+
+    children =
+      if Application.get_env(:thevis, :env) == :test do
+        base_children
+      else
+        List.insert_at(base_children, 3, Thevis.Automation.SchedulerBoot)
+      end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

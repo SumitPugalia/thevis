@@ -133,6 +133,39 @@ defmodule ThevisWeb.ClientOnboardingLive do
                 options={[{"Product-Based", "product_based"}, {"Service-Based", "service_based"}]}
               />
 
+              <div class="border-t border-gray-200 pt-6">
+                <h3 class="text-sm font-semibold text-gray-900 mb-3">
+                  Entity block (for AI visibility)
+                </h3>
+                <p class="text-xs text-gray-500 mb-4">
+                  One-line definition, category, and key concepts help AI systems understand and cite your company. Use the same wording everywhere.
+                </p>
+                <.input
+                  field={@form[:category]}
+                  type="text"
+                  label="Category"
+                  placeholder="e.g., Skincare brand, B2B SaaS, Consulting firm"
+                />
+                <.input
+                  field={@form[:one_line_definition]}
+                  type="textarea"
+                  label="One-line definition"
+                  placeholder="e.g., Acme helps brands optimize content for generative AI search using GEO."
+                />
+                <.input
+                  field={@form[:problem_solved]}
+                  type="textarea"
+                  label="Primary problem solved"
+                  placeholder="e.g., Brands are invisible in AI-generated answers."
+                />
+                <.input
+                  field={@form[:key_concepts]}
+                  type="text"
+                  label="Key concepts (comma-separated)"
+                  placeholder="e.g., GEO, AI visibility, generative search"
+                />
+              </div>
+
               <div>
                 <.button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg">
                   Continue
