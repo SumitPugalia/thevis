@@ -77,14 +77,10 @@ defmodule ThevisWeb.CompanyLive.Index do
 
   @impl true
   def handle_event("suggest_entity_block", _params, socket) do
-    if not socket.assigns.is_admin_route do
-      {:noreply, socket}
-    else
+    if socket.assigns.is_admin_route do
       company = socket.assigns.company
       form = socket.assigns.form
-
-      socket =
-        assign(socket, :suggesting_entity_block, true)
+      socket = assign(socket, :suggesting_entity_block, true)
 
       case suggest_and_merge(form, company) do
         {:ok, new_form} ->
@@ -100,6 +96,8 @@ defmodule ThevisWeb.CompanyLive.Index do
            |> assign(:suggesting_entity_block, false)
            |> put_flash(:error, "Could not get suggestions. Check AI config and try again.")}
       end
+    else
+      {:noreply, socket}
     end
   end
 
@@ -120,23 +118,7 @@ defmodule ThevisWeb.CompanyLive.Index do
     company = socket.assigns.company
     current_user = socket.assigns.current_user
     is_admin_route = socket.assigns.is_admin_route
-
-    result =
-      if company.id do
-        Accounts.update_company(company, company_params)
-      else
-        case Accounts.create_company(company_params) do
-          {:ok, created} ->
-            if current_user && current_user.role == :client do
-              Accounts.assign_role(current_user, created, :owner)
-            end
-
-            {:ok, created}
-
-          other ->
-            other
-        end
-      end
+    result = save_company(company, company_params, current_user)
 
     case result do
       {:ok, _saved_company} ->
@@ -169,6 +151,23 @@ defmodule ThevisWeb.CompanyLive.Index do
   @impl true
   def handle_info({ThevisWeb.CompanyLive.FormComponent, {:saved, company}}, socket) do
     {:noreply, stream_insert(socket, :companies, company)}
+  end
+
+  defp save_company(%Company{id: id} = company, company_params, _current_user) when is_binary(id) do
+    Accounts.update_company(company, company_params)
+  end
+
+  defp save_company(_company, company_params, current_user) do
+    case Accounts.create_company(company_params) do
+      {:ok, created} ->
+        if current_user && current_user.role == :client do
+          Accounts.assign_role(current_user, created, :owner)
+        end
+        {:ok, created}
+
+      other ->
+        other
+    end
   end
 
   defp suggest_and_merge(_form, %Company{id: nil}), do: {:error, :new_company}

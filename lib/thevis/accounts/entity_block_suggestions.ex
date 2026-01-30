@@ -5,8 +5,8 @@ defmodule Thevis.Accounts.EntityBlockSuggestions do
   run this from the company edit form and then edit or submit.
   """
 
-  alias Thevis.AI
   alias Thevis.Accounts.Company
+  alias Thevis.AI
 
   @doc """
   Asks the LLM to suggest one_line_definition, problem_solved, and key_concepts
@@ -59,18 +59,19 @@ defmodule Thevis.Accounts.EntityBlockSuggestions do
 
   defp parse_response(%{"choices" => [%{"message" => %{"content" => content}} | _]})
        when is_binary(content) do
-    content
-    |> String.trim()
-    |> strip_code_fence()
-    |> Jason.decode()
-    |> case do
+    decoded =
+      content
+      |> String.trim()
+      |> strip_code_fence()
+      |> Jason.decode()
+
+    case decoded do
       {:ok, %{} = map} ->
         result = %{
           "one_line_definition" => get_string(map, "one_line_definition"),
           "problem_solved" => get_string(map, "problem_solved"),
           "key_concepts" => get_string(map, "key_concepts")
         }
-
         {:ok, result}
 
       {:ok, _} ->

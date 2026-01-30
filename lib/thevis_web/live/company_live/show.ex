@@ -21,7 +21,10 @@ defmodule ThevisWeb.CompanyLive.Show do
 
     path =
       if url do
-        parsed = URI.parse(to_string(url))
+        parsed =
+          url
+          |> to_string()
+          |> URI.parse()
         parsed.path || ""
       else
         ""
