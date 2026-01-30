@@ -1,0 +1,97 @@
+<Layouts.app flash={@flash} current_scope={%{role: :consultant}}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900">Task Board</h1>
+      <p class="mt-2 text-sm text-gray-600">Manage tasks across all projects</p>
+    </div>
+
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+      <form phx-change="filter" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>
+          <select name="project_id" class="w-full rounded-md border-gray-300 shadow-sm">
+            <option value="">All Projects</option>
+            <%= for project <- @projects do %>
+              <option value={project.id} selected={@selected_project_id == project.id}>
+                {project.name}
+              </option>
+            <% end %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <select name="status" class="w-full rounded-md border-gray-300 shadow-sm">
+            <option value="all" selected={@filter_status == :all}>All Statuses</option>
+            <option value="pending" selected={@filter_status == :pending}>Pending</option>
+            <option value="in_progress" selected={@filter_status == :in_progress}>
+              In Progress
+            </option>
+            <option value="completed" selected={@filter_status == :completed}>Completed</option>
+            <option value="blocked" selected={@filter_status == :blocked}>Blocked</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+          <select name="priority" class="w-full rounded-md border-gray-300 shadow-sm">
+            <option value="all" selected={@filter_priority == :all}>All Priorities</option>
+            <option value="low" selected={@filter_priority == :low}>Low</option>
+            <option value="medium" selected={@filter_priority == :medium}>Medium</option>
+            <option value="high" selected={@filter_priority == :high}>High</option>
+            <option value="critical" selected={@filter_priority == :critical}>Critical</option>
+          </select>
+        </div>
+      </form>
+    </div>
+
+    <div id="tasks" phx-update="stream" class="space-y-4">
+      <div :for={{id, task} <- @streams.tasks} id={id} class="bg-white shadow rounded-lg p-4">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-gray-900">{task.title}</h3>
+            <p class="mt-1 text-sm text-gray-600">{task.description}</p>
+            <div class="mt-2 flex items-center space-x-4">
+              <span class={[
+                "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                status_badge(task.status)
+              ]}>
+                {String.capitalize(to_string(task.status))}
+              </span>
+              <span class={[
+                "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                priority_badge(task.priority)
+              ]}>
+                {String.capitalize(to_string(task.priority))}
+              </span>
+              <%= if task.due_date do %>
+                <span class="text-sm text-gray-500">
+                  Due: {Calendar.strftime(task.due_date, "%Y-%m-%d")}
+                </span>
+              <% end %>
+            </div>
+          </div>
+          <div class="ml-4">
+            <select
+              phx-change="update_status"
+              phx-value-task_id={task.id}
+              name="status"
+              class="rounded-md border-gray-300 shadow-sm"
+            >
+              <option value="pending" selected={task.status == :pending}>Pending</option>
+              <option value="in_progress" selected={task.status == :in_progress}>
+                In Progress
+              </option>
+              <option value="completed" selected={task.status == :completed}>Completed</option>
+              <option value="blocked" selected={task.status == :blocked}>Blocked</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div :if={Enum.empty?(@streams.tasks)} class="text-center py-12">
+        <p class="text-gray-500">No tasks found</p>
+      </div>
+    </div>
+  </div>
+</Layouts.app>

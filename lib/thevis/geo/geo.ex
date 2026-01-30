@@ -6,6 +6,9 @@ defmodule Thevis.Geo do
   import Ecto.Query, warn: false
   alias Thevis.Repo
 
+  alias Thevis.Geo.AuthorityScore
+  alias Thevis.Geo.DriftScore
+  alias Thevis.Geo.Embedding
   alias Thevis.Geo.EntitySnapshot
   alias Thevis.Geo.RecallResult
   alias Thevis.Scans.ScanRun
@@ -117,6 +120,69 @@ defmodule Thevis.Geo do
     RecallResult
     |> where([r], r.scan_run_id == ^scan_run.id and r.product_id == ^product_id)
     |> order_by([r], desc: r.inserted_at)
+    |> Repo.all()
+  end
+
+  ## Authority Scores
+
+  @doc """
+  Returns the list of authority scores for an optimizable entity.
+  """
+  def list_authority_scores(optimizable_type, optimizable_id) do
+    AuthorityScore
+    |> where([a], a.optimizable_type == ^optimizable_type and a.optimizable_id == ^optimizable_id)
+    |> order_by([a], desc: a.inserted_at)
+    |> Repo.all()
+  end
+
+  @doc """
+  Creates an authority score.
+  """
+  def create_authority_score(attrs) do
+    %AuthorityScore{}
+    |> AuthorityScore.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  ## Drift Scores
+
+  @doc """
+  Returns the list of drift scores for an optimizable entity.
+  """
+  def list_drift_scores(optimizable_type, optimizable_id) do
+    DriftScore
+    |> where([d], d.optimizable_type == ^optimizable_type and d.optimizable_id == ^optimizable_id)
+    |> order_by([d], desc: d.inserted_at)
+    |> Repo.all()
+  end
+
+  @doc """
+  Creates a drift score.
+  """
+  def create_drift_score(attrs) do
+    %DriftScore{}
+    |> DriftScore.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  ## Embeddings
+
+  @doc """
+  Creates an embedding.
+  """
+  def create_embedding(attrs) do
+    %Embedding{}
+    |> Embedding.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Gets embeddings for an optimizable entity.
+  """
+  def list_embeddings(optimizable_type, optimizable_id) do
+    Embedding
+    |> where([e], e.optimizable_type == ^optimizable_type and e.optimizable_id == ^optimizable_id)
+    |> order_by([e], desc: e.inserted_at)
     |> Repo.all()
   end
 end

@@ -356,6 +356,58 @@ defmodule Thevis.Scans do
     end
   end
 
+  def execute_scan(%ScanRun{scan_type: :authority} = scan_run) do
+    {:ok, scan_run} = mark_scan_started(scan_run)
+
+    project =
+      scan_run.project_id
+      |> Projects.get_project!()
+      |> Thevis.Repo.preload(:product)
+
+    if is_nil(project.product) do
+      mark_scan_failed(scan_run)
+      {:error, :product_not_found}
+    else
+      execute_authority_analysis(scan_run, project.product)
+    end
+  end
+
+  def execute_scan(%ScanRun{scan_type: :consistency} = scan_run) do
+    {:ok, scan_run} = mark_scan_started(scan_run)
+
+    project =
+      scan_run.project_id
+      |> Projects.get_project!()
+      |> Thevis.Repo.preload(:product)
+
+    if is_nil(project.product) do
+      mark_scan_failed(scan_run)
+      {:error, :product_not_found}
+    else
+      execute_consistency_analysis(scan_run, project.product)
+    end
+  end
+
+  def execute_scan(%ScanRun{scan_type: :full} = scan_run) do
+    # Execute all scan types in sequence
+    entity_probe_run = %{scan_run | scan_type: :entity_probe}
+    recall_run = %{scan_run | scan_type: :recall}
+    authority_run = %{scan_run | scan_type: :authority}
+    consistency_run = %{scan_run | scan_type: :consistency}
+
+    with {:ok, _} <- execute_scan(entity_probe_run),
+         {:ok, _} <- execute_scan(recall_run),
+         {:ok, _} <- execute_scan(authority_run),
+         {:ok, _} <- execute_scan(consistency_run) do
+      mark_scan_completed(scan_run)
+      {:ok, :all_scans_completed}
+    else
+      {:error, reason} ->
+        mark_scan_failed(scan_run)
+        {:error, reason}
+    end
+  end
+
   def execute_scan(%ScanRun{} = scan_run) do
     {:error, {:unsupported_scan_type, scan_run.scan_type}}
   end
@@ -417,6 +469,53 @@ defmodule Thevis.Scans do
       {:error, changeset} ->
         mark_scan_failed(scan_run)
         {:error, changeset}
+    end
+  end
+
+  defp execute_authority_analysis(scan_run, product) do
+    alias Thevis.Geo.AuthorityGraph
+
+    case AuthorityGraph.build_authority_graph(product) do
+      {:ok, sources} ->
+        AuthorityGraph.store_authority_scores(product, sources)
+        overall_score = AuthorityGraph.calculate_overall_authority_score(sources)
+        mark_scan_completed(scan_run)
+        {:ok, %{sources: sources, overall_score: overall_score}}
+
+      {:error, reason} ->
+        mark_scan_failed(scan_run)
+        {:error, reason}
+    end
+  end
+
+  defp execute_consistency_analysis(scan_run, product) do
+    alias Thevis.Geo.Consistency
+    alias Thevis.Geo.Crawler
+
+    # Get sources for consistency analysis
+    sources = [
+      Crawler.crawl_source(:github, product),
+      Crawler.crawl_source(:medium, product),
+      Crawler.crawl_source(:news, product)
+    ]
+
+    valid_sources =
+      sources
+      |> Enum.filter(fn
+        {:ok, _data} -> true
+        {:error, _} -> false
+      end)
+      |> Enum.map(fn {:ok, data} -> data end)
+
+    case Consistency.analyze_consistency(product, valid_sources) do
+      {:ok, drift_scores} ->
+        Consistency.store_drift_scores(product, drift_scores)
+        mark_scan_completed(scan_run)
+        {:ok, drift_scores}
+
+      {:error, reason} ->
+        mark_scan_failed(scan_run)
+        {:error, reason}
     end
   end
 end

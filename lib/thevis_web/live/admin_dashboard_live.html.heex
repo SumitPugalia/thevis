@@ -10,7 +10,7 @@
     </div>
     
 <!-- Stats Overview -->
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
       <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
         <div class="flex items-center justify-between">
           <div>
@@ -67,6 +67,91 @@
           </div>
           <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
             <.icon name="hero-check-circle" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+    </div>
+    
+<!-- Strategy & Wiki Stats -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Tasks</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900">{@stats.total_tasks}</p>
+            <p class="mt-1 text-xs text-gray-500">{@stats.pending_tasks} pending</p>
+          </div>
+          <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+            <.icon name="hero-clipboard-document-list" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Playbooks</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900">{@stats.total_playbooks}</p>
+            <p class="mt-1 text-xs text-gray-500">
+              {@strategy_stats.template_playbooks} templates
+            </p>
+          </div>
+          <div class="p-3 rounded-full bg-teal-100 text-teal-600">
+            <.icon name="hero-book-open" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Narratives</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900">{@stats.total_narratives}</p>
+            <p class="mt-1 text-xs text-gray-500">{@strategy_stats.active_narratives} active</p>
+          </div>
+          <div class="p-3 rounded-full bg-pink-100 text-pink-600">
+            <.icon name="hero-document-text" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Wiki Pages</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900">{@stats.total_wiki_pages}</p>
+            <p class="mt-1 text-xs text-gray-500">{@stats.published_wiki_pages} published</p>
+          </div>
+          <div class="p-3 rounded-full bg-cyan-100 text-cyan-600">
+            <.icon name="hero-globe-alt" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Campaigns</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900">{@stats.total_campaigns}</p>
+            <p class="mt-1 text-xs text-gray-500">{@stats.active_campaigns} active</p>
+          </div>
+          <div class="p-3 rounded-full bg-emerald-100 text-emerald-600">
+            <.icon name="hero-rocket-launch" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Content Items</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900">{@stats.total_content_items}</p>
+            <p class="mt-1 text-xs text-gray-500">
+              {@campaign_stats.published_content_items} published
+            </p>
+          </div>
+          <div class="p-3 rounded-full bg-violet-100 text-violet-600">
+            <.icon name="hero-document-duplicate" class="h-6 w-6" />
           </div>
         </div>
       </div>
@@ -294,6 +379,81 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+    
+<!-- Quick Links -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Strategy Tools</h3>
+            <p class="mt-2 text-sm text-gray-600">Manage tasks, playbooks, and narratives</p>
+            <div class="mt-4 flex space-x-3">
+              <.link
+                navigate={~p"/admin/tasks"}
+                class="text-sm font-medium text-blue-600 hover:text-blue-900"
+              >
+                Task Board →
+              </.link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Wiki Management</h3>
+            <p class="mt-2 text-sm text-gray-600">Monitor and manage wiki pages</p>
+            <div class="mt-4 flex space-x-3">
+              <.link
+                navigate={~p"/admin/wikis"}
+                class="text-sm font-medium text-blue-600 hover:text-blue-900"
+              >
+                View Wikis →
+              </.link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Task Overview</h3>
+            <p class="mt-2 text-sm text-gray-600">
+              {@task_stats.pending_tasks} pending, {@task_stats.in_progress_tasks} in progress, {@task_stats.completed_tasks} completed
+            </p>
+            <div class="mt-4 flex space-x-3">
+              <.link
+                navigate={~p"/admin/tasks"}
+                class="text-sm font-medium text-blue-600 hover:text-blue-900"
+              >
+                View All Tasks →
+              </.link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Campaign Management</h3>
+            <p class="mt-2 text-sm text-gray-600">
+              {@campaign_stats.total_campaigns} total, {@campaign_stats.active_campaigns} active
+            </p>
+            <div class="mt-4 flex space-x-3">
+              <.link
+                navigate={~p"/admin/campaigns"}
+                class="text-sm font-medium text-blue-600 hover:text-blue-900"
+              >
+                Manage Campaigns →
+              </.link>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

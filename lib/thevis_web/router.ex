@@ -105,6 +105,22 @@ defmodule ThevisWeb.Router do
     live "/projects/:id/scans", ScanLive.Index, :index
     live "/projects/:id/scans/:scan_run_id", ScanLive.Show, :show
 
+    # Consultant Strategy Tools
+    live "/tasks", Consultant.TaskBoardLive, :index
+    live "/tasks/project/:project_id", Consultant.TaskBoardLive, :index
+
+    # Consultant Wiki Management
+    live "/wikis", Consultant.WikiManagementLive, :index
+    live "/wikis/project/:project_id", Consultant.WikiManagementLive, :index
+
+    # Consultant Campaign Management
+    live "/campaigns", Consultant.CampaignManagementLive, :index
+    live "/campaigns/project/:project_id", Consultant.CampaignManagementLive, :index
+
+    # Consultant Platform Settings
+    live "/platform-settings", Consultant.PlatformSettingsLive, :index
+    live "/platform-settings/project/:project_id", Consultant.PlatformSettingsLive, :index
+
     # Report download (admin)
     get "/projects/:project_id/report", ReportController, :download
     get "/projects/:project_id/report/:scan_run_id", ReportController, :download

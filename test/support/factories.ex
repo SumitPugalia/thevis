@@ -196,4 +196,13 @@ defmodule Thevis.Factory do
       raw_response: %{}
     }
   end
+
+  def platform_setting_factory do
+    %Thevis.Integrations.PlatformSetting{
+      platform_type: "github",
+      settings: %{"repository" => "owner/repo"},
+      is_active: true,
+      project: build(:product_project)
+    }
+  end
 end

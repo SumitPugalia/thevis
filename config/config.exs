@@ -84,6 +84,31 @@ config :thevis, Oban,
   queues: [default: 10, scans: 10, reports: 5],
   repo: Thevis.Repo
 
+# External Platform API Configuration
+config :thevis, Thevis.Integrations.GitHub,
+  api_token: {System, :get_env, ["GITHUB_API_TOKEN"]},
+  api_url: "https://api.github.com",
+  default_branch: "main"
+
+config :thevis, Thevis.Integrations.Medium,
+  api_token: {System, :get_env, ["MEDIUM_API_TOKEN"]},
+  api_url: "https://api.medium.com/v1"
+
+config :thevis, Thevis.Integrations.Blog,
+  cms_type: {System, :get_env, ["BLOG_CMS_TYPE", "wordpress"]},
+  api_url: {System, :get_env, ["BLOG_API_URL"]},
+  api_key: {System, :get_env, ["BLOG_API_KEY"]},
+  username: {System, :get_env, ["BLOG_USERNAME"]}
+
+config :thevis, Thevis.Integrations.Citations,
+  enabled: true,
+  citation_sources: [
+    "scholar.google.com",
+    "arxiv.org",
+    "ieee.org",
+    "acm.org"
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

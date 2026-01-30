@@ -1,0 +1,194 @@
+<Layouts.app flash={@flash} current_scope={%{name: :consultant}}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">Platform Settings</h1>
+      <p class="mt-2 text-sm text-gray-600">
+        Manage platform integrations for projects (GitHub, Medium, Blog, etc.)
+      </p>
+    </div>
+    
+<!-- Project Filter -->
+    <div class="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+      <label for="project_filter" class="block text-sm font-medium text-gray-700 mb-2">
+        Filter by Project
+      </label>
+      <form phx-change="filter" id="project-filter-form">
+        <select
+          name="project_id"
+          id="project_filter"
+          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        >
+          <option value="">All Projects</option>
+          <option
+            :for={project <- @projects}
+            value={project.id}
+            selected={@selected_project_id == project.id}
+          >
+            {project.name}
+          </option>
+        </select>
+      </form>
+    </div>
+    
+<!-- Platform Settings List -->
+    <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-900">Platform Settings</h2>
+        <button
+          phx-click="new_setting"
+          phx-value-project_id={@selected_project_id}
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+        >
+          Add Platform Setting
+        </button>
+      </div>
+
+      <div class="divide-y divide-gray-200">
+        <div :for={setting <- @platform_settings} class="px-6 py-4">
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center space-x-3">
+                <span class={[
+                  "px-2 py-1 text-xs font-medium rounded-full",
+                  platform_type_badge(setting.platform_type)
+                ]}>
+                  {String.capitalize(setting.platform_type)}
+                </span>
+                <span class={[
+                  "px-2 py-1 text-xs font-medium rounded-full",
+                  if(setting.is_active,
+                    do: "bg-green-100 text-green-800",
+                    else: "bg-gray-100 text-gray-800"
+                  )
+                ]}>
+                  {if(setting.is_active, do: "Active", else: "Inactive")}
+                </span>
+              </div>
+              <div class="mt-2 text-sm text-gray-600">
+                <p class="font-medium">Settings:</p>
+                <pre class="mt-1 text-xs bg-gray-50 p-2 rounded">{Jason.encode!(setting.settings, pretty: true)}</pre>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2 ml-4">
+              <button
+                phx-click="edit_setting"
+                phx-value-setting_id={setting.id}
+                class="px-3 py-1 text-sm text-blue-600 hover:text-blue-900"
+              >
+                Edit
+              </button>
+              <button
+                phx-click="delete_setting"
+                phx-value-setting_id={setting.id}
+                data-confirm="Are you sure?"
+                class="px-3 py-1 text-sm text-red-600 hover:text-red-900"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div :if={@platform_settings == []} class="px-6 py-12 text-center">
+          <p class="text-gray-500">No platform settings found. Create one to get started.</p>
+        </div>
+      </div>
+    </div>
+    
+<!-- Edit/New Setting Modal -->
+    <div
+      :if={@editing_setting}
+      class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
+      phx-click="cancel_edit"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+        phx-click-away="cancel_edit"
+      >
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-gray-900">
+            {if(Map.has_key?(@editing_setting, :id), do: "Edit", else: "New")} Platform Setting
+          </h3>
+          <button phx-click="cancel_edit" class="text-gray-400 hover:text-gray-600">
+            <.icon name="hero-x-mark" class="h-6 w-6" />
+          </button>
+        </div>
+
+        <form phx-submit="save_setting" class="px-6 py-4">
+          <input
+            type="hidden"
+            name="setting[project_id]"
+            value={@editing_setting.project_id || @selected_project_id}
+          />
+
+          <div class="space-y-4">
+            <div>
+              <label for="platform_type" class="block text-sm font-medium text-gray-700 mb-1">
+                Platform Type
+              </label>
+              <select
+                name="setting[platform_type]"
+                id="platform_type"
+                required
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              >
+                <option value="">Select Platform</option>
+                <option
+                  :for={{label, value} <- platform_type_options()}
+                  value={value}
+                  selected={@editing_setting.platform_type == value}
+                >
+                  {label}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Settings (JSON)
+              </label>
+              <textarea
+                name="setting[settings]"
+                rows="8"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm font-mono text-xs"
+                placeholder={~s({"repository": "owner/repo", "branch": "main"})}
+              >{Jason.encode!(@editing_setting.settings || %{}, pretty: true)}</textarea>
+              <p class="mt-1 text-xs text-gray-500">
+                Enter settings as JSON. For GitHub: repository and branch. For Medium: tags array.
+              </p>
+            </div>
+
+            <div class="flex items-center">
+              <input
+                type="checkbox"
+                name="setting[is_active]"
+                id="is_active"
+                checked={@editing_setting.is_active}
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label for="is_active" class="ml-2 block text-sm text-gray-900">
+                Active
+              </label>
+            </div>
+          </div>
+
+          <div class="mt-6 flex items-center justify-end space-x-3">
+            <button
+              type="button"
+              phx-click="cancel_edit"
+              class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</Layouts.app>

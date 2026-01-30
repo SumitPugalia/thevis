@@ -1,0 +1,80 @@
+<Layouts.app flash={@flash} current_scope={%{role: :consultant}}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900">Campaign Management</h1>
+      <p class="mt-2 text-sm text-gray-600">Manage automation campaigns across all projects</p>
+    </div>
+
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+      <form phx-change="filter" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>
+          <select name="project_id" class="w-full rounded-md border-gray-300 shadow-sm">
+            <option value="">All Projects</option>
+            <%= for project <- @projects do %>
+              <option value={project.id} selected={@selected_project_id == project.id}>
+                {project.name}
+              </option>
+            <% end %>
+          </select>
+        </div>
+      </form>
+    </div>
+
+    <div id="campaigns" phx-update="stream" class="space-y-4">
+      <div
+        :for={{id, campaign} <- @streams.campaigns}
+        id={id}
+        class="bg-white shadow rounded-lg p-6"
+      >
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-gray-900">{campaign.name}</h3>
+            <p class="mt-1 text-sm text-gray-600">{campaign.description}</p>
+            <div class="mt-4 flex items-center space-x-4">
+              <span class={[
+                "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                status_badge(campaign.status)
+              ]}>
+                {String.capitalize(to_string(campaign.status))}
+              </span>
+              <span class={[
+                "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                campaign_type_badge(campaign.campaign_type)
+              ]}>
+                {String.replace(Atom.to_string(campaign.campaign_type), "_", " ")
+                |> String.capitalize()}
+              </span>
+              <span class="text-sm text-gray-500">
+                Intensity: {String.capitalize(to_string(campaign.intensity))}
+              </span>
+              <%= if campaign.started_at do %>
+                <span class="text-sm text-gray-500">
+                  Started: {Calendar.strftime(campaign.started_at, "%Y-%m-%d")}
+                </span>
+              <% end %>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">
+              Project: {campaign.project.name}
+            </p>
+          </div>
+          <div class="ml-4">
+            <%= if campaign.status == :draft do %>
+              <button
+                phx-click="start_campaign"
+                phx-value-campaign_id={campaign.id}
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Start Campaign
+              </button>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div :if={Enum.empty?(@streams.campaigns)} class="text-center py-12">
+        <p class="text-gray-500">No campaigns found</p>
+      </div>
+    </div>
+  </div>
+</Layouts.app>
