@@ -51,7 +51,7 @@
                 <div class="text-sm text-gray-600">{company.industry}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{company_type_badge(company.company_type)}"}>
+                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{BadgeHelpers.company_type_badge(company.company_type)}"}>
                   {String.replace(to_string(company.company_type), "_", " ")
                   |> String.capitalize()}
                 </span>

@@ -89,6 +89,7 @@ defmodule ThevisWeb do
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS
+      alias ThevisWeb.Helpers.BadgeHelpers
       alias ThevisWeb.Layouts
 
       # Routes generation with the ~p sigil

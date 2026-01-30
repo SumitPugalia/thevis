@@ -35,11 +35,6 @@ defmodule ThevisWeb.ScanLive.Show do
      |> assign(:recall_results, recall_results)}
   end
 
-  defp status_badge(:pending), do: "bg-gray-100 text-gray-800"
-  defp status_badge(:running), do: "bg-blue-100 text-blue-800"
-  defp status_badge(:completed), do: "bg-green-100 text-green-800"
-  defp status_badge(:failed), do: "bg-red-100 text-red-800"
-
   defp confidence_color(confidence) when confidence >= 0.8, do: "text-green-600"
   defp confidence_color(confidence) when confidence >= 0.5, do: "text-yellow-600"
   defp confidence_color(_confidence), do: "text-red-600"

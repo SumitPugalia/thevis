@@ -163,14 +163,4 @@ defmodule ThevisWeb.Consultant.TaskBoardLive do
   defp parse_priority_filter(nil), do: :all
   defp parse_priority_filter(""), do: :all
   defp parse_priority_filter(priority), do: String.to_existing_atom(priority)
-
-  defp status_badge(:pending), do: "bg-gray-100 text-gray-800"
-  defp status_badge(:in_progress), do: "bg-blue-100 text-blue-800"
-  defp status_badge(:completed), do: "bg-green-100 text-green-800"
-  defp status_badge(:blocked), do: "bg-red-100 text-red-800"
-
-  defp priority_badge(:low), do: "bg-gray-100 text-gray-800"
-  defp priority_badge(:medium), do: "bg-yellow-100 text-yellow-800"
-  defp priority_badge(:high), do: "bg-orange-100 text-orange-800"
-  defp priority_badge(:critical), do: "bg-red-100 text-red-800"
 end

@@ -25,12 +25,9 @@ defmodule Thevis.Integrations.MediumClient do
     url = "#{@api_url}/me"
     headers = [{"Authorization", "Bearer #{token}"}, {"Content-Type", "application/json"}]
 
-    case Req.get(url, headers: headers) do
-      {:ok, %{status: 200, body: response}} ->
+    case Thevis.HTTP.get(url, headers: headers) do
+      {:ok, response} when is_map(response) ->
         {:ok, response["data"]}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, {:api_error, status, body}}
 
       {:error, reason} ->
         {:error, reason}
@@ -54,12 +51,9 @@ defmodule Thevis.Integrations.MediumClient do
       {"Content-Type", "application/json"}
     ]
 
-    case Req.post(url, body: body, headers: headers) do
-      {:ok, %{status: 201, body: response}} ->
-        {:ok, response["data"]["url"]}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, {:api_error, status, body}}
+    case Thevis.HTTP.post(url, body: body, headers: headers) do
+      {:ok, response} when is_map(response) ->
+        {:ok, get_in(response, ["data", "url"])}
 
       {:error, reason} ->
         {:error, reason}

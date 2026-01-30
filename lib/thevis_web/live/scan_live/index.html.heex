@@ -60,7 +60,7 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class={[
                   "px-2 py-1 text-xs font-semibold rounded-full",
-                  scan_type_badge(scan_run.scan_type)
+                  BadgeHelpers.scan_type_badge(scan_run.scan_type)
                 ]}>
                   {String.replace(Atom.to_string(scan_run.scan_type), "_", " ")
                   |> String.capitalize()}
@@ -69,7 +69,7 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class={[
                   "px-2 py-1 text-xs font-semibold rounded-full",
-                  status_badge(scan_run.status)
+                  BadgeHelpers.scan_run_status_badge(scan_run.status)
                 ]}>
                   {String.capitalize(Atom.to_string(scan_run.status))}
                 </span>

@@ -25,8 +25,8 @@ defmodule Thevis.Integrations.NewsApiClient do
     url = "#{@api_url}/everything"
     params = [q: query, apiKey: api_key, pageSize: page_size, sortBy: "relevancy"]
 
-    case Req.get(url, params: params) do
-      {:ok, %{status: 200, body: %{"status" => "ok", "articles" => articles}}} ->
+    case Thevis.HTTP.get(url, params: params) do
+      {:ok, %{"status" => "ok", "articles" => articles}} ->
         normalized =
           Enum.map(articles, fn a ->
             %{
@@ -41,11 +41,8 @@ defmodule Thevis.Integrations.NewsApiClient do
 
         {:ok, normalized}
 
-      {:ok, %{status: 401, body: _}} ->
+      {:error, :unauthorized} ->
         {:error, :invalid_api_key}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, {:api_error, status, body}}
 
       {:error, reason} ->
         {:error, reason}

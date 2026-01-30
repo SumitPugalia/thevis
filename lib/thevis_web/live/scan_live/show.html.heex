@@ -28,7 +28,7 @@
           <dd class="mt-1">
             <span class={[
               "px-2 py-1 text-xs font-semibold rounded-full",
-              status_badge(@scan_run.status)
+              BadgeHelpers.scan_run_status_badge(@scan_run.status)
             ]}>
               {String.capitalize(Atom.to_string(@scan_run.status))}
             </span>

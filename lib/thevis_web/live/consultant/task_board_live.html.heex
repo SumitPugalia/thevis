@@ -54,13 +54,13 @@
             <div class="mt-2 flex items-center space-x-4">
               <span class={[
                 "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                status_badge(task.status)
+                BadgeHelpers.task_status_badge(task.status)
               ]}>
                 {String.capitalize(to_string(task.status))}
               </span>
               <span class={[
                 "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                priority_badge(task.priority)
+                BadgeHelpers.priority_badge(task.priority)
               ]}>
                 {String.capitalize(to_string(task.priority))}
               </span>

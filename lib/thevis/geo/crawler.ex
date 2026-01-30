@@ -146,15 +146,12 @@ defmodule Thevis.Geo.Crawler do
       {"User-Agent", "thevis-crawler/1.0 (AI visibility optimization; +https://thevis.ai)"}
     ]
 
-    case Req.get(url, headers: headers, receive_timeout: timeout) do
-      {:ok, %{status: 200, body: body}} when is_binary(body) ->
+    case Thevis.HTTP.get(url, headers: headers, receive_timeout: timeout) do
+      {:ok, body} when is_binary(body) ->
         {:ok, extract_content(body)}
 
-      {:ok, %{status: _}} ->
+      {:error, _reason} ->
         {:error, :fetch_failed}
-
-      {:error, reason} ->
-        {:error, reason}
     end
   end
 
@@ -244,15 +241,15 @@ defmodule Thevis.Geo.Crawler do
       {"User-Agent", "thevis-crawler/1.0 (AI visibility optimization; +https://thevis.ai)"}
     ]
 
-    case Req.get(url, headers: headers, receive_timeout: timeout) do
-      {:ok, %{status: 200, body: body}} when is_binary(body) ->
+    case Thevis.HTTP.get(url, headers: headers, receive_timeout: timeout) do
+      {:ok, body} when is_binary(body) ->
         {:ok, extract_content(body)}
 
-      {:ok, %{status: status}} when status in 300..399 ->
+      {:error, :redirect} ->
         {:error, :redirect_not_followed}
 
-      {:ok, %{status: status}} ->
-        {:error, {:http_status, status}}
+      {:error, :api_error} ->
+        {:error, {:http_status, :api_error}}
 
       {:error, reason} ->
         {:error, reason}

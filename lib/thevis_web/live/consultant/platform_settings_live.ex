@@ -186,11 +186,4 @@ defmodule ThevisWeb.Consultant.PlatformSettingsLive do
       {"Contentful", "contentful"}
     ]
   end
-
-  defp platform_type_badge("github"), do: "bg-purple-100 text-purple-800"
-  defp platform_type_badge("medium"), do: "bg-green-100 text-green-800"
-  defp platform_type_badge("blog"), do: "bg-blue-100 text-blue-800"
-  defp platform_type_badge("wordpress"), do: "bg-blue-100 text-blue-800"
-  defp platform_type_badge("contentful"), do: "bg-indigo-100 text-indigo-800"
-  defp platform_type_badge(_), do: "bg-gray-100 text-gray-800"
 end

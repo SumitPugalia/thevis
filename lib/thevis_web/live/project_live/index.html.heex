@@ -169,13 +169,13 @@
                   <div class="text-sm text-gray-500">{project.description || "-"}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{project_type_badge(project.project_type)}"}>
+                  <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{BadgeHelpers.project_type_badge(project.project_type)}"}>
                     {String.replace(to_string(project.project_type), "_", " ")
                     |> String.capitalize()}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{status_badge(project.status)}"}>
+                  <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{BadgeHelpers.project_status_badge(project.status)}"}>
                     {String.capitalize(to_string(project.status))}
                   </span>
                 </td>

@@ -45,13 +45,13 @@
             <div class="mt-2 flex items-center space-x-4">
               <span class={[
                 "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                status_badge(wiki_page.status)
+                BadgeHelpers.wiki_page_status_badge(wiki_page.status)
               ]}>
                 {String.capitalize(to_string(wiki_page.status))}
               </span>
               <span class={[
                 "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                page_type_badge(wiki_page.page_type)
+                BadgeHelpers.wiki_page_type_badge(wiki_page.page_type)
               ]}>
                 {String.capitalize(to_string(wiki_page.page_type))}
               </span>

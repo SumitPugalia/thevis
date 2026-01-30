@@ -284,7 +284,7 @@ defmodule ThevisWeb.ClientDashboardLive do
                               <h5 class="font-medium text-gray-900">{project.name}</h5>
                               <span class={[
                                 "px-2 py-0.5 text-xs font-semibold rounded-full",
-                                project_status_badge(project.status)
+                                BadgeHelpers.project_status_badge(project.status)
                               ]}>
                                 {String.capitalize(Atom.to_string(project.status))}
                               </span>
@@ -692,10 +692,6 @@ defmodule ThevisWeb.ClientDashboardLive do
         {:noreply, assign(socket, service_form: to_form(changeset, as: "service"))}
     end
   end
-
-  defp project_status_badge(:active), do: "bg-green-100 text-green-800"
-  defp project_status_badge(:paused), do: "bg-yellow-100 text-yellow-800"
-  defp project_status_badge(:archived), do: "bg-gray-100 text-gray-800"
 
   defp confidence_color(confidence) when confidence >= 0.8, do: "text-green-600"
   defp confidence_color(confidence) when confidence >= 0.5, do: "text-yellow-600"

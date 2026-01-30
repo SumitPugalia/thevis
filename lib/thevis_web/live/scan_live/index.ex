@@ -59,15 +59,4 @@ defmodule ThevisWeb.ScanLive.Index do
          put_flash(socket, :error, "Failed to create scan: #{inspect(changeset.errors)}")}
     end
   end
-
-  defp status_badge(:pending), do: "bg-gray-100 text-gray-800"
-  defp status_badge(:running), do: "bg-blue-100 text-blue-800"
-  defp status_badge(:completed), do: "bg-green-100 text-green-800"
-  defp status_badge(:failed), do: "bg-red-100 text-red-800"
-
-  defp scan_type_badge(:entity_probe), do: "bg-purple-100 text-purple-800"
-  defp scan_type_badge(:recall), do: "bg-indigo-100 text-indigo-800"
-  defp scan_type_badge(:authority), do: "bg-yellow-100 text-yellow-800"
-  defp scan_type_badge(:consistency), do: "bg-pink-100 text-pink-800"
-  defp scan_type_badge(:full), do: "bg-blue-100 text-blue-800"
 end

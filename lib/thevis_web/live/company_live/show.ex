@@ -53,7 +53,7 @@ defmodule ThevisWeb.CompanyLive.Show do
             <div>
               <dt class="text-sm font-medium text-gray-500">Company Type</dt>
               <dd class="mt-1">
-                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{company_type_badge(@company.company_type)}"}>
+                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{BadgeHelpers.company_type_badge(@company.company_type)}"}>
                   {String.replace(to_string(@company.company_type), "_", " ") |> String.capitalize()}
                 </span>
               </dd>
@@ -84,7 +84,4 @@ defmodule ThevisWeb.CompanyLive.Show do
     </Layouts.app>
     """
   end
-
-  defp company_type_badge(:product_based), do: "bg-blue-100 text-blue-800"
-  defp company_type_badge(:service_based), do: "bg-purple-100 text-purple-800"
 end

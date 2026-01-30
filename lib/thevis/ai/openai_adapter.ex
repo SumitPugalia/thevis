@@ -75,12 +75,9 @@ defmodule Thevis.AI.OpenAIAdapter do
       {"Content-Type", "application/json"}
     ]
 
-    case Req.post(url, json: body, headers: headers) do
-      {:ok, %{status: 200, body: response}} ->
+    case Thevis.HTTP.post(url, json: body, headers: headers) do
+      {:ok, response} when is_map(response) ->
         {:ok, response}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, {:http_error, status, body}}
 
       {:error, reason} ->
         {:error, reason}
@@ -100,12 +97,9 @@ defmodule Thevis.AI.OpenAIAdapter do
       {"Content-Type", "application/json"}
     ]
 
-    case Req.post(url, json: body, headers: headers) do
-      {:ok, %{status: 200, body: %{"data" => [%{"embedding" => embedding} | _]}}} ->
+    case Thevis.HTTP.post(url, json: body, headers: headers) do
+      {:ok, %{"data" => [%{"embedding" => embedding} | _]}} ->
         {:ok, embedding}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, {:http_error, status, body}}
 
       {:error, reason} ->
         {:error, reason}

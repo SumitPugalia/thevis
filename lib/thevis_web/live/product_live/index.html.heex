@@ -49,7 +49,7 @@
                 <div class="text-sm text-gray-600">{product.category || "-"}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{product_type_badge(product.product_type)}"}>
+                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{BadgeHelpers.product_type_badge(product.product_type)}"}>
                   {String.capitalize(to_string(product.product_type))}
                 </span>
               </td>

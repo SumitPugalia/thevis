@@ -75,7 +75,4 @@ defmodule ThevisWeb.CompanyLive.Index do
 
     {:noreply, stream_delete(socket, :companies, company)}
   end
-
-  defp company_type_badge(:product_based), do: "bg-blue-100 text-blue-800"
-  defp company_type_badge(:service_based), do: "bg-purple-100 text-purple-800"
 end

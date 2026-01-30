@@ -56,7 +56,7 @@ defmodule ThevisWeb.ProductLive.Show do
             <div>
               <dt class="text-sm font-medium text-gray-500">Product Type</dt>
               <dd class="mt-1">
-                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{product_type_badge(@product.product_type)}"}>
+                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{BadgeHelpers.product_type_badge(@product.product_type)}"}>
                   {String.capitalize(to_string(@product.product_type))}
                 </span>
               </dd>
@@ -84,12 +84,4 @@ defmodule ThevisWeb.ProductLive.Show do
     </Layouts.app>
     """
   end
-
-  defp product_type_badge(:cosmetic), do: "bg-pink-100 text-pink-800"
-  defp product_type_badge(:edible), do: "bg-green-100 text-green-800"
-  defp product_type_badge(:sweet), do: "bg-yellow-100 text-yellow-800"
-  defp product_type_badge(:d2c), do: "bg-blue-100 text-blue-800"
-  defp product_type_badge(:fashion), do: "bg-purple-100 text-purple-800"
-  defp product_type_badge(:wellness), do: "bg-indigo-100 text-indigo-800"
-  defp product_type_badge(_), do: "bg-gray-100 text-gray-800"
 end

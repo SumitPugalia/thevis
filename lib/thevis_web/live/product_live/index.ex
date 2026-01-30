@@ -110,12 +110,4 @@ defmodule ThevisWeb.ProductLive.Index do
 
     {:noreply, stream_delete(socket, :products, product)}
   end
-
-  defp product_type_badge(:cosmetic), do: "bg-pink-100 text-pink-800"
-  defp product_type_badge(:edible), do: "bg-green-100 text-green-800"
-  defp product_type_badge(:sweet), do: "bg-yellow-100 text-yellow-800"
-  defp product_type_badge(:d2c), do: "bg-blue-100 text-blue-800"
-  defp product_type_badge(:fashion), do: "bg-purple-100 text-purple-800"
-  defp product_type_badge(:wellness), do: "bg-indigo-100 text-indigo-800"
-  defp product_type_badge(_), do: "bg-gray-100 text-gray-800"
 end

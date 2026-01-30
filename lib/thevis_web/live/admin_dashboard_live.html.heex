@@ -342,7 +342,7 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class={[
                   "px-2 py-1 text-xs font-semibold rounded-full",
-                  scan_type_badge(scan.scan_type)
+                  BadgeHelpers.scan_type_badge(scan.scan_type)
                 ]}>
                   {String.replace(Atom.to_string(scan.scan_type), "_", " ") |> String.capitalize()}
                 </span>
@@ -353,7 +353,7 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class={[
                   "px-2 py-1 text-xs font-semibold rounded-full",
-                  status_badge(scan.status)
+                  BadgeHelpers.scan_run_status_badge(scan.status)
                 ]}>
                   {String.capitalize(Atom.to_string(scan.status))}
                 </span>
@@ -436,7 +436,7 @@
                 <%= if row.latest_scan_run do %>
                   <span class={[
                     "px-2 py-1 text-xs font-semibold rounded-full",
-                    scan_type_badge(row.latest_scan_run.scan_type)
+                    BadgeHelpers.scan_type_badge(row.latest_scan_run.scan_type)
                   ]}>
                     {String.replace(Atom.to_string(row.latest_scan_run.scan_type), "_", " ")
                     |> String.capitalize()}
@@ -449,7 +449,7 @@
                 <%= if row.latest_scan_run do %>
                   <span class={[
                     "px-2 py-1 text-xs font-semibold rounded-full",
-                    status_badge(row.latest_scan_run.status)
+                    BadgeHelpers.scan_run_status_badge(row.latest_scan_run.status)
                   ]}>
                     {String.capitalize(Atom.to_string(row.latest_scan_run.status))}
                   </span>

@@ -34,13 +34,13 @@
             <div class="mt-4 flex items-center space-x-4">
               <span class={[
                 "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                status_badge(campaign.status)
+                BadgeHelpers.campaign_status_badge(campaign.status)
               ]}>
                 {String.capitalize(to_string(campaign.status))}
               </span>
               <span class={[
                 "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                campaign_type_badge(campaign.campaign_type)
+                BadgeHelpers.campaign_type_badge(campaign.campaign_type)
               ]}>
                 {String.replace(Atom.to_string(campaign.campaign_type), "_", " ")
                 |> String.capitalize()}

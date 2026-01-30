@@ -202,12 +202,4 @@ defmodule ThevisWeb.ProjectLive.Index do
      |> put_flash(:error, error_message)
      |> assign(form: to_form(changeset, as: "project"))}
   end
-
-  defp project_type_badge(:product_launch), do: "bg-red-100 text-red-800"
-  defp project_type_badge(:ongoing_monitoring), do: "bg-green-100 text-green-800"
-  defp project_type_badge(:audit_only), do: "bg-gray-100 text-gray-800"
-
-  defp status_badge(:active), do: "bg-green-100 text-green-800"
-  defp status_badge(:paused), do: "bg-yellow-100 text-yellow-800"
-  defp status_badge(:archived), do: "bg-gray-100 text-gray-800"
 end

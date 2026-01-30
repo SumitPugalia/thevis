@@ -60,7 +60,7 @@ defmodule ThevisWeb.ProjectLive.Show do
             <div>
               <dt class="text-sm font-medium text-gray-500">Project Type</dt>
               <dd class="mt-1">
-                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{project_type_badge(@project.project_type)}"}>
+                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{BadgeHelpers.project_type_badge(@project.project_type)}"}>
                   {String.replace(to_string(@project.project_type), "_", " ") |> String.capitalize()}
                 </span>
               </dd>
@@ -68,7 +68,7 @@ defmodule ThevisWeb.ProjectLive.Show do
             <div>
               <dt class="text-sm font-medium text-gray-500">Status</dt>
               <dd class="mt-1">
-                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{status_badge(@project.status)}"}>
+                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{BadgeHelpers.project_status_badge(@project.status)}"}>
                   {String.capitalize(to_string(@project.status))}
                 </span>
               </dd>
@@ -103,12 +103,4 @@ defmodule ThevisWeb.ProjectLive.Show do
     </Layouts.app>
     """
   end
-
-  defp project_type_badge(:product_launch), do: "bg-red-100 text-red-800"
-  defp project_type_badge(:ongoing_monitoring), do: "bg-green-100 text-green-800"
-  defp project_type_badge(:audit_only), do: "bg-gray-100 text-gray-800"
-
-  defp status_badge(:active), do: "bg-green-100 text-green-800"
-  defp status_badge(:paused), do: "bg-yellow-100 text-yellow-800"
-  defp status_badge(:archived), do: "bg-gray-100 text-gray-800"
 end

@@ -42,12 +42,9 @@ defmodule Thevis.Integrations.BlogClient do
         {"Content-Type", "application/json"}
       ]
 
-      case Req.post(url, body: body, headers: headers) do
-        {:ok, %{status: 201, body: response}} ->
+      case Thevis.HTTP.post(url, body: body, headers: headers) do
+        {:ok, response} when is_map(response) ->
           {:ok, response["link"]}
-
-        {:ok, %{status: status, body: body}} ->
-          {:error, {:api_error, status, body}}
 
         {:error, reason} ->
           {:error, reason}
@@ -84,13 +81,10 @@ defmodule Thevis.Integrations.BlogClient do
         {"X-Contentful-Content-Type", content_type_id}
       ]
 
-      case Req.post(url, body: body, headers: headers) do
-        {:ok, %{status: 201, body: response}} ->
+      case Thevis.HTTP.post(url, body: body, headers: headers) do
+        {:ok, response} when is_map(response) ->
           entry_id = get_in(response, ["sys", "id"])
           {:ok, "https://app.contentful.com/spaces/#{space_id}/entries/#{entry_id}"}
-
-        {:ok, %{status: status, body: body_response}} ->
-          {:error, {:api_error, status, body_response}}
 
         {:error, reason} ->
           {:error, reason}

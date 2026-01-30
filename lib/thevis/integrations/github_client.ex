@@ -45,12 +45,9 @@ defmodule Thevis.Integrations.GitHubClient do
       {"Content-Type", "application/json"}
     ]
 
-    case Req.post(url, body: body, headers: headers) do
-      {:ok, %{status: 201, body: response}} ->
+    case Thevis.HTTP.post(url, body: body, headers: headers) do
+      {:ok, response} when is_map(response) ->
         {:ok, response["content"]["html_url"]}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, {:api_error, status, body}}
 
       {:error, reason} ->
         {:error, reason}
@@ -79,12 +76,9 @@ defmodule Thevis.Integrations.GitHubClient do
       {"Content-Type", "application/json"}
     ]
 
-    case Req.put(url, body: body, headers: headers) do
-      {:ok, %{status: 200, body: response}} ->
+    case Thevis.HTTP.put(url, body: body, headers: headers) do
+      {:ok, response} when is_map(response) ->
         {:ok, response["content"]["html_url"]}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, {:api_error, status, body}}
 
       {:error, reason} ->
         {:error, reason}
@@ -101,18 +95,15 @@ defmodule Thevis.Integrations.GitHubClient do
 
     headers = maybe_add_auth([{"Accept", "application/vnd.github.v3+json"}], token)
 
-    case Req.get(url, headers: headers) do
-      {:ok, %{status: 200, body: %{"content" => encoded, "encoding" => "base64"}}} ->
+    case Thevis.HTTP.get(url, headers: headers) do
+      {:ok, %{"content" => encoded, "encoding" => "base64"}} ->
         {:ok, Base.decode64!(encoded)}
 
-      {:ok, %{status: 200, body: %{"content" => encoded}}} ->
+      {:ok, %{"content" => encoded}} ->
         {:ok, Base.decode64!(encoded)}
 
-      {:ok, %{status: 404}} ->
+      {:error, :not_found} ->
         {:error, :not_found}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, {:api_error, status, body}}
 
       {:error, reason} ->
         {:error, reason}
@@ -131,8 +122,8 @@ defmodule Thevis.Integrations.GitHubClient do
 
     headers = maybe_add_auth([{"Accept", "application/vnd.github.v3+json"}], token)
 
-    case Req.get(url, params: params, headers: headers) do
-      {:ok, %{status: 200, body: %{"items" => items}}} ->
+    case Thevis.HTTP.get(url, params: params, headers: headers) do
+      {:ok, %{"items" => items}} ->
         repos =
           Enum.map(items, fn item ->
             %{
@@ -145,9 +136,6 @@ defmodule Thevis.Integrations.GitHubClient do
           end)
 
         {:ok, repos}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, {:api_error, status, body}}
 
       {:error, reason} ->
         {:error, reason}
@@ -163,15 +151,12 @@ defmodule Thevis.Integrations.GitHubClient do
       {"Accept", "application/vnd.github.v3+json"}
     ]
 
-    case Req.get(url, headers: headers) do
-      {:ok, %{status: 200, body: response}} ->
+    case Thevis.HTTP.get(url, headers: headers) do
+      {:ok, response} when is_map(response) ->
         {:ok, response["sha"]}
 
-      {:ok, %{status: 404}} ->
+      {:error, :not_found} ->
         {:error, :not_found}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, {:api_error, status, body}}
 
       {:error, reason} ->
         {:error, reason}

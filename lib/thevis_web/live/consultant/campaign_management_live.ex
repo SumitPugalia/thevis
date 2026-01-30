@@ -91,16 +91,4 @@ defmodule ThevisWeb.Consultant.CampaignManagementLive do
   defp load_campaigns(project_id) when is_binary(project_id) do
     Automation.list_campaigns(project_id)
   end
-
-  defp status_badge(:draft), do: "bg-gray-100 text-gray-800"
-  defp status_badge(:active), do: "bg-green-100 text-green-800"
-  defp status_badge(:paused), do: "bg-yellow-100 text-yellow-800"
-  defp status_badge(:completed), do: "bg-blue-100 text-blue-800"
-  defp status_badge(:failed), do: "bg-red-100 text-red-800"
-
-  defp campaign_type_badge(:content), do: "bg-purple-100 text-purple-800"
-  defp campaign_type_badge(:authority), do: "bg-indigo-100 text-indigo-800"
-  defp campaign_type_badge(:consistency), do: "bg-pink-100 text-pink-800"
-  defp campaign_type_badge(:full), do: "bg-blue-100 text-blue-800"
-  defp campaign_type_badge(:product_launch), do: "bg-orange-100 text-orange-800"
 end

@@ -90,13 +90,4 @@ defmodule ThevisWeb.Consultant.WikiManagementLive do
        when is_binary(project_id) and is_binary(platform_id) do
     Wikis.list_wiki_pages(project_id, %{platform_id: platform_id})
   end
-
-  defp status_badge(:draft), do: "bg-gray-100 text-gray-800"
-  defp status_badge(:published), do: "bg-green-100 text-green-800"
-  defp status_badge(:archived), do: "bg-yellow-100 text-yellow-800"
-  defp status_badge(:failed), do: "bg-red-100 text-red-800"
-
-  defp page_type_badge(:product), do: "bg-blue-100 text-blue-800"
-  defp page_type_badge(:company), do: "bg-purple-100 text-purple-800"
-  defp page_type_badge(:service), do: "bg-indigo-100 text-indigo-800"
 end
