@@ -25,6 +25,7 @@ defmodule ThevisWeb.Consultant.CampaignManagementLive do
         |> assign(:projects, projects)
         |> assign(:playbooks, playbooks)
         |> assign(:selected_project_id, nil)
+        |> assign(:campaigns_empty?, true)
         |> stream(:campaigns, [])
 
       {:ok, socket}
@@ -44,6 +45,7 @@ defmodule ThevisWeb.Consultant.CampaignManagementLive do
     socket =
       socket
       |> assign(:selected_project_id, project_id)
+      |> assign(:campaigns_empty?, campaigns == [])
       |> stream(:campaigns, campaigns, reset: true)
 
     {:noreply, socket}
@@ -56,6 +58,7 @@ defmodule ThevisWeb.Consultant.CampaignManagementLive do
     socket =
       socket
       |> assign(:selected_project_id, project_id)
+      |> assign(:campaigns_empty?, campaigns == [])
       |> stream(:campaigns, campaigns, reset: true)
 
     {:noreply, socket}

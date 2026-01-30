@@ -25,6 +25,7 @@ defmodule ThevisWeb.Consultant.TaskBoardLive do
         |> assign(:selected_project_id, nil)
         |> assign(:filter_status, :all)
         |> assign(:filter_priority, :all)
+        |> assign(:tasks_empty?, tasks == [])
         |> stream(:tasks, tasks, reset: true)
 
       {:ok, socket}
@@ -49,6 +50,7 @@ defmodule ThevisWeb.Consultant.TaskBoardLive do
       |> assign(:selected_project_id, project_id)
       |> assign(:filter_status, filter_status)
       |> assign(:filter_priority, filter_priority)
+      |> assign(:tasks_empty?, tasks == [])
       |> stream(:tasks, tasks, reset: true)
 
     {:noreply, socket}
@@ -70,6 +72,7 @@ defmodule ThevisWeb.Consultant.TaskBoardLive do
       |> assign(:selected_project_id, project_id)
       |> assign(:filter_status, filter_status)
       |> assign(:filter_priority, filter_priority)
+      |> assign(:tasks_empty?, tasks == [])
       |> stream(:tasks, tasks, reset: true)
 
     {:noreply, socket}

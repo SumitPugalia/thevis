@@ -16,7 +16,9 @@ defmodule Thevis.Automation do
   Returns the list of campaigns for a project.
   """
   def list_campaigns(project_id, filters \\ %{}) do
-    base_query = from(c in Campaign, where: c.project_id == ^project_id)
+    base_query =
+      from(c in Campaign, where: c.project_id == ^project_id)
+      |> preload([:project])
 
     base_query
     |> apply_campaign_filters(filters)

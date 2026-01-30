@@ -25,6 +25,7 @@ defmodule ThevisWeb.Consultant.WikiManagementLive do
         |> assign(:platforms, platforms)
         |> assign(:selected_project_id, nil)
         |> assign(:selected_platform_id, nil)
+        |> assign(:wiki_pages_empty?, true)
         |> stream(:wiki_pages, [])
 
       {:ok, socket}
@@ -47,6 +48,7 @@ defmodule ThevisWeb.Consultant.WikiManagementLive do
       socket
       |> assign(:selected_project_id, project_id)
       |> assign(:selected_platform_id, platform_id)
+      |> assign(:wiki_pages_empty?, wiki_pages == [])
       |> stream(:wiki_pages, wiki_pages, reset: true)
 
     {:noreply, socket}
@@ -60,6 +62,7 @@ defmodule ThevisWeb.Consultant.WikiManagementLive do
       socket
       |> assign(:selected_project_id, project_id)
       |> assign(:selected_platform_id, platform_id)
+      |> assign(:wiki_pages_empty?, wiki_pages == [])
       |> stream(:wiki_pages, wiki_pages, reset: true)
 
     {:noreply, socket}
