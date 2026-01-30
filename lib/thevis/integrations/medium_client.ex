@@ -67,18 +67,6 @@ defmodule Thevis.Integrations.MediumClient do
   end
 
   defp get_api_token do
-    config = Application.get_env(:thevis, __MODULE__)
-
-    if config do
-      api_token = Keyword.get(config, :api_token)
-
-      case api_token do
-        {System, :get_env, [key]} -> System.get_env(key)
-        token when is_binary(token) -> token
-        _ -> nil
-      end
-    else
-      nil
-    end
+    Thevis.Integrations.get_api_token(__MODULE__)
   end
 end

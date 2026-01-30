@@ -475,17 +475,11 @@ defmodule Thevis.Scans do
   defp execute_authority_analysis(scan_run, product) do
     alias Thevis.Geo.AuthorityGraph
 
-    case AuthorityGraph.build_authority_graph(product) do
-      {:ok, sources} ->
-        AuthorityGraph.store_authority_scores(product, sources)
-        overall_score = AuthorityGraph.calculate_overall_authority_score(sources)
-        mark_scan_completed(scan_run)
-        {:ok, %{sources: sources, overall_score: overall_score}}
-
-      {:error, reason} ->
-        mark_scan_failed(scan_run)
-        {:error, reason}
-    end
+    {:ok, sources} = AuthorityGraph.build_authority_graph(product)
+    AuthorityGraph.store_authority_scores(product, sources)
+    overall_score = AuthorityGraph.calculate_overall_authority_score(sources)
+    mark_scan_completed(scan_run)
+    {:ok, %{sources: sources, overall_score: overall_score}}
   end
 
   defp execute_consistency_analysis(scan_run, product) do

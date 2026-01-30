@@ -76,6 +76,26 @@ defmodule Thevis.Integrations do
     end
   end
 
+  @doc """
+  Resolves API token for an integration module from application config.
+  Used by GitHub, Medium, and other API clients.
+  """
+  def get_api_token(module) do
+    config = Application.get_env(:thevis, module)
+
+    if config do
+      api_token = Keyword.get(config, :api_token)
+
+      case api_token do
+        {_system, :get_env, [key]} -> System.get_env(key)
+        token when is_binary(token) -> token
+        _ -> nil
+      end
+    else
+      nil
+    end
+  end
+
   defp apply_platform_filters(query, %{platform_type: platform_type}) do
     where(query, [ps], ps.platform_type == ^platform_type)
   end

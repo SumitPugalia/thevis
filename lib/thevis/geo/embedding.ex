@@ -27,7 +27,7 @@ defmodule Thevis.Geo.Embedding do
           text_content: String.t(),
           source_type: String.t(),
           source_url: String.t() | nil,
-          embedding: Pgvector.Ecto.Vector.t(),
+          embedding: term(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
         }

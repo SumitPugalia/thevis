@@ -41,23 +41,7 @@ defmodule Thevis.Automation.PlaybookIntegration do
     playbook = Strategy.get_playbook!(playbook_id)
 
     if project && playbook.steps do
-      steps = playbook.steps
-
-      campaigns =
-        steps
-        |> Map.to_list()
-        |> Enum.map(fn {step_name, step_data} ->
-          create_campaign_for_step(project_id, playbook_id, step_name, step_data, attrs)
-        end)
-        |> Enum.filter(fn result ->
-          case result do
-            {:ok, _campaign} -> true
-            {:error, _} -> false
-          end
-        end)
-        |> Enum.map(fn {:ok, campaign} -> campaign end)
-
-      {:ok, campaigns}
+      {:ok, build_campaigns_from_steps(project_id, playbook_id, playbook.steps, attrs)}
     else
       {:error, :invalid_playbook}
     end
@@ -105,6 +89,19 @@ defmodule Thevis.Automation.PlaybookIntegration do
       |> Map.put(:settings, %{step_name: step_name, step_data: step_data})
 
     Automation.create_campaign(campaign_attrs)
+  end
+
+  defp build_campaigns_from_steps(project_id, playbook_id, steps, attrs) do
+    steps
+    |> Map.to_list()
+    |> Enum.map(fn {step_name, step_data} ->
+      create_campaign_for_step(project_id, playbook_id, step_name, step_data, attrs)
+    end)
+    |> Enum.filter(fn
+      {:ok, _campaign} -> true
+      {:error, _} -> false
+    end)
+    |> Enum.map(fn {:ok, campaign} -> campaign end)
   end
 
   defp determine_campaign_type(playbook) do

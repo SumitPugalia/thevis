@@ -36,7 +36,8 @@ defmodule Thevis.Automation.ContentWikiSync do
     _campaign = Automation.get_campaign!(campaign_id)
 
     content_items =
-      Automation.list_content_items(campaign_id, %{status: :published})
+      campaign_id
+      |> then(&Automation.list_content_items(&1, %{status: :published}))
       |> Enum.filter(fn item -> item.status == :published end)
 
     results =
@@ -89,7 +90,7 @@ defmodule Thevis.Automation.ContentWikiSync do
       metadata: %{
         content_item_id: content_item.id,
         campaign_id: content_item.campaign_id,
-        synced_at: DateTime.utc_now() |> DateTime.to_iso8601()
+        synced_at: DateTime.to_iso8601(DateTime.utc_now())
       }
     }
 
@@ -130,7 +131,7 @@ defmodule Thevis.Automation.ContentWikiSync do
       metadata: %{
         content_item_id: content_item.id,
         updated_from_content_item: true,
-        synced_at: DateTime.utc_now() |> DateTime.to_iso8601()
+        synced_at: DateTime.to_iso8601(DateTime.utc_now())
       }
     }
 
@@ -140,7 +141,7 @@ defmodule Thevis.Automation.ContentWikiSync do
         updated_metadata =
           Map.merge(wiki_page.metadata || %{}, %{
             last_synced_content_item_id: content_item.id,
-            last_synced_at: DateTime.utc_now() |> then(&DateTime.to_iso8601/1)
+            last_synced_at: DateTime.to_iso8601(DateTime.utc_now())
           })
 
         Wikis.update_wiki_page(wiki_page, %{metadata: updated_metadata})

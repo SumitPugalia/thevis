@@ -72,10 +72,8 @@ defmodule Thevis.Geo.AuthorityGraph do
 
     competitor_sources =
       Enum.map(competitors, fn competitor ->
-        case build_authority_graph(competitor) do
-          {:ok, sources} -> sources
-          {:error, _} -> []
-        end
+        {:ok, sources} = build_authority_graph(competitor)
+        sources
       end)
 
     gaps = find_missing_sources(optimizable_sources, competitor_sources)

@@ -24,16 +24,8 @@ defmodule Thevis.Automation.CitationGenerator do
   Generates citation text for embedding in content.
   """
   def generate_citation_text(%Project{} = project, style \\ :apa) do
-    case generate_citations(project, :academic) do
-      {:ok, [citation | _]} ->
-        format_citation(citation, style)
-
-      {:ok, []} ->
-        ""
-
-      {:error, _reason} ->
-        ""
-    end
+    {:ok, [citation | _]} = generate_citations(project, :academic)
+    format_citation(citation, style)
   end
 
   defp build_citations(project, :academic) do

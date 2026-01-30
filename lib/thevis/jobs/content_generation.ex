@@ -26,29 +26,33 @@ defmodule Thevis.Jobs.ContentGeneration do
       nil ->
         {:error, :project_not_found}
 
-      _project ->
-        case ContentCreator.generate_content(project, content_type) do
-          {:ok, content} ->
-            platform = ContentHelpers.get_platform_for_content_type(content_type)
+      proj ->
+        create_content_item_for_project(proj, project_id, content_type, campaign_id)
+    end
+  end
 
-            attrs = %{
-              campaign_id: campaign_id,
-              project_id: project_id,
-              content_type: content_type,
-              title: ContentHelpers.generate_title(project, content_type),
-              content: content,
-              platform: platform,
-              status: :draft
-            }
+  defp create_content_item_for_project(project, project_id, content_type, campaign_id) do
+    case ContentCreator.generate_content(project, content_type) do
+      {:ok, content} ->
+        platform = ContentHelpers.get_platform_for_content_type(content_type)
 
-            case Automation.create_content_item(attrs) do
-              {:ok, content_item} -> {:ok, content_item.id}
-              {:error, changeset} -> {:error, changeset}
-            end
+        attrs = %{
+          campaign_id: campaign_id,
+          project_id: project_id,
+          content_type: content_type,
+          title: ContentHelpers.generate_title(project, content_type),
+          content: content,
+          platform: platform,
+          status: :draft
+        }
 
-          {:error, reason} ->
-            {:error, reason}
+        case Automation.create_content_item(attrs) do
+          {:ok, content_item} -> {:ok, content_item.id}
+          {:error, changeset} -> {:error, changeset}
         end
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 end

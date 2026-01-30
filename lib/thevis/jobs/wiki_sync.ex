@@ -13,10 +13,8 @@ defmodule Thevis.Jobs.WikiSync do
     project = Projects.get_project(project_id)
 
     if project do
-      case WikiManager.sync_wiki_pages(project) do
-        {:ok, _results} -> :ok
-        {:error, reason} -> {:error, reason}
-      end
+      {:ok, _results} = WikiManager.sync_wiki_pages(project)
+      :ok
     else
       {:error, :project_not_found}
     end

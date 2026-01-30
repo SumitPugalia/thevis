@@ -14,7 +14,7 @@ defmodule Thevis.Automation.PerformanceTracker do
     updated_metrics =
       current_metrics
       |> Map.merge(metrics)
-      |> Map.put(:last_updated, DateTime.utc_now() |> DateTime.to_iso8601())
+      |> Map.put(:last_updated, DateTime.to_iso8601(DateTime.utc_now()))
 
     Automation.update_content_item(content_item, %{performance_metrics: updated_metrics})
   end
@@ -68,13 +68,15 @@ defmodule Thevis.Automation.PerformanceTracker do
           acc + shares
         end)
 
-      avg_performance_score =
+      scores =
         content_items
         |> Enum.map(&calculate_performance_score/1)
         |> Enum.filter(&(&1 > 0))
-        |> case do
+
+      avg_performance_score =
+        case scores do
           [] -> 0.0
-          scores -> Enum.sum(scores) / length(scores)
+          s -> Enum.sum(s) / length(s)
         end
 
       %{

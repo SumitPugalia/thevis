@@ -71,10 +71,8 @@ defmodule Thevis.Strategy.PlaybookEngine do
   end
 
   defp get_opportunities(project) do
-    case OpportunityDetector.detect_opportunities(project) do
-      {:ok, opportunities} -> opportunities
-      {:error, _} -> []
-    end
+    {:ok, opportunities} = OpportunityDetector.detect_opportunities(project)
+    opportunities
   end
 
   defp calculate_match_score(playbook, opportunities) do
